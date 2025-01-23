@@ -1,5 +1,4 @@
-[![Mutation testing badge](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fpatchlevel%2Fhydrator%2F1.0.x)](https://dashboard.stryker-mutator.io/reports/github.com/patchlevel/event-sourcing-phpunit/1.0.x)
-[![Type Coverage](https://shepherd.dev/github/patchlevel/event-sourcing-phpunit/coverage.svg)](https://shepherd.dev/github/patchlevel/event-sourcing-phpunit)
+[![Mutation testing badge](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fpatchlevel%2Fevent-sourcing-phpunit%2F1.0.x)](https://dashboard.stryker-mutator.io/reports/github.com/patchlevel/event-sourcing-phpunit/1.0.x)
 [![Latest Stable Version](https://poser.pugx.org/patchlevel/event-sourcing-phpunit/v)](//packagist.org/packages/patchlevel/event-sourcing-phpunit)
 [![License](https://poser.pugx.org/patchlevel/event-sourcing-phpunit/license)](//packagist.org/packages/patchlevel/event-sourcing-phpunit)
 
