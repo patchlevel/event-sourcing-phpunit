@@ -124,11 +124,11 @@ final class ProfileTest extends AggregateRootTestCase
 
 ## Testing Subscriber
 
-For testing a subscriber there is a trait which you can use. When using `SubscriberUtilities` you will also be provided
-with a bunch of dx features which makes the testing easier. First, providing the events is the same with a `given`
-method. After that, you can call `executeRun` which can take multiple subscribers, which will be provided with the
-`given` events. The events will be mapped according the `#[Subscribe]` attribute. For our example we are taking as
-simplified subscriber:
+For testing a subscriber there is a utility class which you can use. Using `SubscriberUtilities` will provide you a
+bunch of dx features which makes the testing easier. First, you will need to provide the utility class the subscriptions
+you will want to test, this is done when initialiszing the class. After that, you can call these 3 methods:
+`executeSetup`, `executeRun` and `executeTeardown`. These methods will be calling the right methods which are defined
+via the attributes. For our example we are taking as simplified subscriber:
 
 ```php
 use Patchlevel\EventSourcing\Attribute\Setup;
@@ -176,78 +176,19 @@ final class ProfileSubscriberTest extends TestCase
     {
         $subscriber = new ProfileSubscriber(/* inject deps, if needed */);
         
-        $this
-            ->given(
-                new ProfileCreated(
-                    ProfileId::fromString('1'),
-                    Email::fromString('hq@patchlevel.de'),
-                ),
+        $util = new SubscriberUtilities($subscriber);
+        $util->executeSetup();
+        $util->executeRun(
+            new ProfileCreated(
+                ProfileId::fromString('1'),
+                Email::fromString('hq@patchlevel.de'),
             )
-            ->executeRun($subscriber);
-            
-        self::assertSame(1, $subscriber->count);
-    }
-}
-```
-
-You can also test the setup and teardown methods:
-
-```php
-use Patchlevel\EventSourcing\Attribute\Subscriber;
-use Patchlevel\EventSourcing\Subscription\RunMode;
-use Patchlevel\EventSourcing\PhpUnit\Test\SubscriberUtilities;
-
-final class ProfileSubscriberTest extends TestCase
-{
-    use SubscriberUtilities;
-
-    public function testSetup(): void 
-    {
-        $subscriber = new ProfileSubscriber(/* inject deps, if needed */);
-        
-        $this->executeSetup($subscriber);
-            
-        self::assertSame(1, $subscriber->count);
-    }
-
-    public function testTeardown(): void 
-    {
-        $subscriber = new ProfileSubscriber(/* inject deps, if needed */);
-        
-        $this->executeTeardown($subscriber);
-            
-        self::assertSame(1, $subscriber->count);
-    }
-}
-```
-
-Of course, you can also execute the whole workflow in one test:
-
-```php
-use Patchlevel\EventSourcing\Attribute\Subscriber;
-use Patchlevel\EventSourcing\Subscription\RunMode;
-use Patchlevel\EventSourcing\PhpUnit\Test\SubscriberUtilities;
-
-final class ProfileSubscriberTest extends TestCase
-{
-    use SubscriberUtilities;
-
-    public function testProfileCreated(): void 
-    {
-        $subscriber = new ProfileSubscriber(/* inject deps, if needed */);
-        
-        $this
-            ->given(
-                new ProfileCreated(
-                    ProfileId::fromString('1'),
-                    Email::fromString('hq@patchlevel.de'),
-                ),
-            )
-            ->executeSetup($subscriber)
-            ->executeRun($subscriber)
-            ->executeTeardown($subscriber);
-            
+        );
+       $util->executeTeardown();
+     
         self::assertSame(3, $subscriber->count);
     }
 }
 ```
+
+This Util class can be used for integration or unit tests.

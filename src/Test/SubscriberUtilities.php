@@ -5,27 +5,37 @@ declare(strict_types=1);
 namespace Patchlevel\EventSourcing\PhpUnit\Test;
 
 use Patchlevel\EventSourcing\Message\Message;
-use Patchlevel\EventSourcing\Subscription\Subscriber\MetadataSubscriberAccessor;
+use Patchlevel\EventSourcing\Metadata\Subscriber\AttributeSubscriberMetadataFactory;
+use Patchlevel\EventSourcing\Metadata\Subscriber\SubscriberMetadataFactory;
+use Patchlevel\EventSourcing\Subscription\Subscriber\ArgumentResolver\ArgumentResolver;
 use Patchlevel\EventSourcing\Subscription\Subscriber\MetadataSubscriberAccessorRepository;
-use PHPUnit\Framework\Attributes\Before;
+use Patchlevel\EventSourcing\Subscription\Subscriber\SubscriberAccessorRepository;
 
-trait SubscriberUtilities
+final class SubscriberUtilities
 {
-    /** @var array<object> */
-    private array $givenEvents = [];
-    /**  @var iterable<MetadataSubscriberAccessor<object>>|null */
-    private iterable|null $subscriberAccessors;
+    private SubscriberAccessorRepository $subscriberAccessorRepository;
 
-    public function given(object ...$events): self
+    /**
+     * @param object|array<object> $subscribers
+     * @param SubscriberMetadataFactory $metadataFactory
+     * @param iterable<ArgumentResolver> $argumentResolvers
+     */
+    public function __construct(
+        object|array $subscribers,
+        SubscriberMetadataFactory $metadataFactory = new AttributeSubscriberMetadataFactory(),
+        iterable $argumentResolvers = [],
+    )
     {
-        $this->givenEvents = $events;
-
-        return $this;
+        $this->subscriberAccessorRepository = new MetadataSubscriberAccessorRepository(
+            is_array($subscribers) ? $subscribers : [$subscribers],
+            $metadataFactory,
+            $argumentResolvers
+        );
     }
 
-    public function executeSetup(object ...$subscribers): self
+    public function executeSetup(): self
     {
-        $subscriberAccessors = $this->createSubscriberAccessors($subscribers);
+        $subscriberAccessors = $this->subscriberAccessorRepository->all();
 
         foreach ($subscriberAccessors as $subscriberAccessor) {
             $setupMethod = $subscriberAccessor->setupMethod();
@@ -40,11 +50,11 @@ trait SubscriberUtilities
         return $this;
     }
 
-    public function executeRun(object ...$subscribers): self
+    public function executeRun(object ...$events): self
     {
-        $subscriberAccessors = $this->createSubscriberAccessors($subscribers);
+        $subscriberAccessors = $this->subscriberAccessorRepository->all();
 
-        foreach ($this->givenEvents as $event) {
+        foreach ($events as $event) {
             foreach ($subscriberAccessors as $subscriberAccessor) {
                 foreach ($subscriberAccessor->subscribeMethods($event::class) as $subscribeMethod) {
                     $subscribeMethod(Message::create($event));
@@ -55,9 +65,9 @@ trait SubscriberUtilities
         return $this;
     }
 
-    public function executeTeardown(object ...$subscribers): self
+    public function executeTeardown(): self
     {
-        $subscriberAccessors = $this->createSubscriberAccessors($subscribers);
+        $subscriberAccessors = $this->subscriberAccessorRepository->all();
 
         foreach ($subscriberAccessors as $subscriberAccessor) {
             $teardownMethod = $subscriberAccessor->teardownMethod();
@@ -70,22 +80,5 @@ trait SubscriberUtilities
         }
 
         return $this;
-    }
-
-    #[Before]
-    public function reset(): void
-    {
-        $this->givenEvents = [];
-        $this->subscriberAccessors = null;
-    }
-
-    /**
-     * @param array<object> $subscribers
-     *
-     * @return iterable<MetadataSubscriberAccessor<object>>
-     */
-    private function createSubscriberAccessors(array $subscribers): iterable
-    {
-        return $this->subscriberAccessors ??= (new MetadataSubscriberAccessorRepository($subscribers))->all();
     }
 }
