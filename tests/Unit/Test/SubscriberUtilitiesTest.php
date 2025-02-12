@@ -12,7 +12,6 @@ use Patchlevel\EventSourcing\PhpUnit\Test\SubscriberUtilities;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\Email;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\ProfileCreated;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\ProfileId;
-use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\SubscriberUtilitiesTestClass;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -32,15 +31,13 @@ final class SubscriberUtilitiesTest extends TestCase
             }
         };
 
-        $test = $this->getTester();
-        $test
-            ->given(
-                new ProfileCreated(
-                    ProfileId::fromString('1'),
-                    Email::fromString('hq@patchlevel.de'),
-                ),
-            )
-            ->executeRun($subscriber);
+        $util = new SubscriberUtilities($subscriber);
+        $util->executeRun(
+            new ProfileCreated(
+                ProfileId::fromString('1'),
+                Email::fromString('hq@patchlevel.de'),
+            ),
+        );
 
         self::assertSame(1, $subscriber->called);
     }
@@ -57,15 +54,13 @@ final class SubscriberUtilitiesTest extends TestCase
             }
         };
 
-        $test = $this->getTester();
-        $test
-            ->given(
-                new ProfileCreated(
-                    ProfileId::fromString('1'),
-                    Email::fromString('hq@patchlevel.de'),
-                ),
-            )
-            ->executeRun($subscriber);
+        $util = new SubscriberUtilities($subscriber);
+        $util->executeRun(
+            new ProfileCreated(
+                ProfileId::fromString('1'),
+                Email::fromString('hq@patchlevel.de'),
+            ),
+        );
 
         self::assertSame(0, $subscriber->called);
     }
@@ -92,8 +87,8 @@ final class SubscriberUtilitiesTest extends TestCase
             }
         };
 
-        $test = $this->getTester();
-        $test->executeSetup($subscriber, $subscriber2);
+        $util = new SubscriberUtilities([$subscriber, $subscriber2]);
+        $util->executeSetup();
 
         self::assertSame(0, $subscriber->called);
         self::assertSame(0, $subscriber2->called);
@@ -123,8 +118,8 @@ final class SubscriberUtilitiesTest extends TestCase
             }
         };
 
-        $test = $this->getTester();
-        $test->executeSetup($subscriber, $subscriber2);
+        $util = new SubscriberUtilities([$subscriber, $subscriber2]);
+        $util->executeSetup();
 
         self::assertSame(1, $subscriber->called);
         self::assertSame(1, $subscriber2->called);
@@ -153,8 +148,8 @@ final class SubscriberUtilitiesTest extends TestCase
             }
         };
 
-        $test = $this->getTester();
-        $test->executeSetup($subscriber, $subscriber2);
+        $util = new SubscriberUtilities([$subscriber, $subscriber2]);
+        $util->executeSetup();
 
         self::assertSame(0, $subscriber->called);
         self::assertSame(1, $subscriber2->called);
@@ -182,8 +177,8 @@ final class SubscriberUtilitiesTest extends TestCase
             }
         };
 
-        $test = $this->getTester();
-        $test->executeTeardown($subscriber, $subscriber2);
+        $util = new SubscriberUtilities([$subscriber, $subscriber2]);
+        $util->executeTeardown();
 
         self::assertSame(0, $subscriber->called);
         self::assertSame(0, $subscriber2->called);
@@ -213,8 +208,8 @@ final class SubscriberUtilitiesTest extends TestCase
             }
         };
 
-        $test = $this->getTester();
-        $test->executeTeardown($subscriber, $subscriber2);
+        $util = new SubscriberUtilities([$subscriber, $subscriber2]);
+        $util->executeTeardown();
 
         self::assertSame(1, $subscriber->called);
         self::assertSame(1, $subscriber2->called);
@@ -243,91 +238,10 @@ final class SubscriberUtilitiesTest extends TestCase
             }
         };
 
-        $test = $this->getTester();
-        $test->executeTeardown($subscriber, $subscriber2);
+        $util = new SubscriberUtilities([$subscriber, $subscriber2]);
+        $util->executeTeardown();
 
         self::assertSame(0, $subscriber->called);
         self::assertSame(1, $subscriber2->called);
-    }
-
-    public function testReset(): void
-    {
-        $subscriber = new #[Projector('test')]
-        class {
-            public int $called = 0;
-
-            #[Subscribe(ProfileCreated::class)]
-            public function run(): void
-            {
-                $this->called++;
-            }
-        };
-
-        $event = new ProfileCreated(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de'));
-
-        $test = $this->getTester();
-        $test
-            ->given($event)
-            ->executeRun($subscriber);
-
-        self::assertSame(1, $subscriber->called);
-        self::assertSame([$event], $test->getGivenEvents());
-
-        $metadataSubscriberAccessors = $test->getSubscriberAccessors();
-        self::assertNotNull($metadataSubscriberAccessors);
-        self::assertCount(1, $metadataSubscriberAccessors);
-
-        $test->reset();
-
-        self::assertSame([], $test->getGivenEvents());
-        self::assertNull($test->getSubscriberAccessors());
-
-        $test = $this->getTester();
-        $test
-            ->given($event)
-            ->executeRun($subscriber);
-
-        self::assertSame(2, $subscriber->called);
-        self::assertSame([$event], $test->getGivenEvents());
-        self::assertNotSame($metadataSubscriberAccessors, $test->getSubscriberAccessors());
-        self::assertEquals($metadataSubscriberAccessors, $test->getSubscriberAccessors());
-    }
-
-    public function testCaching(): void
-    {
-        $subscriber = new #[Projector('test')]
-        class {
-            public int $called = 0;
-
-            #[Subscribe(ProfileCreated::class)]
-            public function run(): void
-            {
-                $this->called++;
-            }
-        };
-
-        $event = new ProfileCreated(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de'));
-
-        $test = $this->getTester();
-        $test
-            ->given($event)
-            ->executeRun($subscriber);
-
-        self::assertSame(1, $subscriber->called);
-        self::assertSame([$event], $test->getGivenEvents());
-        $metadataSubscriberAccessors = $test->getSubscriberAccessors();
-        self::assertNotNull($metadataSubscriberAccessors);
-        self::assertCount(1, $metadataSubscriberAccessors);
-
-        $test->executeRun($subscriber);
-
-        self::assertSame(2, $subscriber->called);
-        self::assertSame([$event], $test->getGivenEvents());
-        self::assertSame($metadataSubscriberAccessors, $test->getSubscriberAccessors());
-    }
-
-    public function getTester(): SubscriberUtilitiesTestClass
-    {
-        return new SubscriberUtilitiesTestClass();
     }
 }
