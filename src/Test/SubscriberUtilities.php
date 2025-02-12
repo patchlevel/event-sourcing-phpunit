@@ -11,25 +11,25 @@ use Patchlevel\EventSourcing\Subscription\Subscriber\ArgumentResolver\ArgumentRe
 use Patchlevel\EventSourcing\Subscription\Subscriber\MetadataSubscriberAccessorRepository;
 use Patchlevel\EventSourcing\Subscription\Subscriber\SubscriberAccessorRepository;
 
+use function is_array;
+
 final class SubscriberUtilities
 {
     private SubscriberAccessorRepository $subscriberAccessorRepository;
 
     /**
-     * @param object|array<object> $subscribers
-     * @param SubscriberMetadataFactory $metadataFactory
+     * @param object|array<object>       $subscribers
      * @param iterable<ArgumentResolver> $argumentResolvers
      */
     public function __construct(
         object|array $subscribers,
         SubscriberMetadataFactory $metadataFactory = new AttributeSubscriberMetadataFactory(),
         iterable $argumentResolvers = [],
-    )
-    {
+    ) {
         $this->subscriberAccessorRepository = new MetadataSubscriberAccessorRepository(
             is_array($subscribers) ? $subscribers : [$subscribers],
             $metadataFactory,
-            $argumentResolvers
+            $argumentResolvers,
         );
     }
 

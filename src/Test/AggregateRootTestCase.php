@@ -17,9 +17,7 @@ abstract class AggregateRootTestCase extends TestCase
 {
     /** @var array<object> */
     private array $givenEvents = [];
-
-    /** @var array<Closure> */
-    private array $whens = [];
+    private Closure|null $when = null;
 
     /** @var array<object> */
     private array $expectedEvents = [];
@@ -30,21 +28,21 @@ abstract class AggregateRootTestCase extends TestCase
     /** @return class-string<AggregateRoot> */
     abstract protected function aggregateClass(): string;
 
-    public function given(object ...$events): self
+    final public function given(object ...$events): self
     {
         $this->givenEvents = $events;
 
         return $this;
     }
 
-    public function when(Closure ...$callables): self
+    final public function when(Closure $callable): self
     {
-        $this->whens = $callables;
+        $this->when = $callable;
 
         return $this;
     }
 
-    public function then(object ...$events): self
+    final public function then(object ...$events): self
     {
         $this->expectedEvents = $events;
 
@@ -52,14 +50,14 @@ abstract class AggregateRootTestCase extends TestCase
     }
 
     /** @param class-string<Throwable> $exception */
-    public function expectsException(string $exception): self
+    final public function expectsException(string $exception): self
     {
         $this->expectedException = $exception;
 
         return $this;
     }
 
-    public function expectsExceptionMessage(string $exceptionMessage): self
+    final public function expectsExceptionMessage(string $exceptionMessage): self
     {
         $this->expectedExceptionMessage = $exceptionMessage;
 
@@ -67,7 +65,7 @@ abstract class AggregateRootTestCase extends TestCase
     }
 
     #[After]
-    public function assert(): self
+    final public function assert(): self
     {
         $aggregate = null;
 
@@ -76,22 +74,16 @@ abstract class AggregateRootTestCase extends TestCase
         }
 
         try {
-            foreach ($this->whens as $callable) {
-                $return = $callable($aggregate);
+            if ($this->when !== null) {
+                $return = ($this->when)($aggregate);
 
                 if ($aggregate !== null && $return instanceof AggregateRoot) {
                     throw new AggregateAlreadySet();
                 }
 
-                if ($aggregate === null && !$return instanceof AggregateRoot) {
-                    throw new NoAggregateCreated();
+                if ($aggregate === null) {
+                    $aggregate = $return;
                 }
-
-                if ($aggregate !== null) {
-                    continue;
-                }
-
-                $aggregate = $return;
             }
         } catch (Throwable $throwable) {
             $this->handleException($throwable);
@@ -109,10 +101,10 @@ abstract class AggregateRootTestCase extends TestCase
     }
 
     #[Before]
-    public function reset(): void
+    final public function reset(): void
     {
         $this->givenEvents = [];
-        $this->whens = [];
+        $this->when = null;
         $this->expectedEvents = [];
         $this->expectedException = null;
         $this->expectedExceptionMessage = null;

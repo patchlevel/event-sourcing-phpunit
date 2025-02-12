@@ -114,12 +114,8 @@ final class AggregateRootTestCaseTest extends TestCase
             )
             ->when(
                 static fn (Profile $profile) => $profile->visitProfile(ProfileId::fromString('2')),
-                static fn (Profile $profile) => $profile->visitProfile(ProfileId::fromString('2')),
-                static fn (Profile $profile) => $profile->visitProfile(ProfileId::fromString('2')),
             )
             ->then(
-                new ProfileVisited(ProfileId::fromString('2')),
-                new ProfileVisited(ProfileId::fromString('2')),
                 new ProfileVisited(ProfileId::fromString('2')),
             );
 
@@ -174,31 +170,11 @@ final class AggregateRootTestCaseTest extends TestCase
             ->given()
             ->when(
                 static fn () => Profile::createProfile(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')),
-                static fn (Profile $profile) => $profile->visitProfile(ProfileId::fromString('2')),
-            )
-            ->then(
-                new ProfileCreated(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')),
-                new ProfileVisited(ProfileId::fromString('2')),
-            );
-
-        $test->assert();
-        self::assertSame(1, $test::getCount());
-    }
-
-    public function testCreationWithSecondWhen(): void
-    {
-        $test = $this->getTester();
-
-        $test
-            ->when(
-                static fn () => '',
-                static fn () => Profile::createProfile(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')),
             )
             ->then(
                 new ProfileCreated(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')),
             );
 
-        $this->expectException(NoAggregateCreated::class);
         $test->assert();
         self::assertSame(1, $test::getCount());
     }
