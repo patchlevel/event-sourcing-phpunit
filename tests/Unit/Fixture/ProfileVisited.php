@@ -14,6 +14,7 @@ final class ProfileVisited implements Stringable
     public function __construct(
         #[IdNormalizer]
         public ProfileId $visitorId,
+        public string|null $token = null,
     ) {
     }
 

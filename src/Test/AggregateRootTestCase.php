@@ -6,18 +6,23 @@ namespace Patchlevel\EventSourcing\PhpUnit\Test;
 
 use Closure;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
+use Patchlevel\EventSourcing\CommandBus\HandlerFinder;
 use PHPUnit\Framework\Attributes\After;
 use PHPUnit\Framework\Attributes\Before;
 use PHPUnit\Framework\Constraint\Exception as ExceptionConstraint;
 use PHPUnit\Framework\Constraint\ExceptionMessageIsOrContains;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use Throwable;
 
 abstract class AggregateRootTestCase extends TestCase
 {
     /** @var array<object> */
     private array $givenEvents = [];
-    private Closure|null $when = null;
+    private object|null $when = null;
+
+    /** @var array<mixed> */
+    private array $parameters = [];
 
     /** @var array<object> */
     private array $expectedEvents = [];
@@ -35,9 +40,11 @@ abstract class AggregateRootTestCase extends TestCase
         return $this;
     }
 
-    final public function when(Closure $callable): self
+    /** @param object|Closure $callable */
+    final public function when(object $callable, mixed ...$parameters): self
     {
         $this->when = $callable;
+        $this->parameters = $parameters;
 
         return $this;
     }
@@ -78,7 +85,29 @@ abstract class AggregateRootTestCase extends TestCase
         }
 
         try {
-            $return = ($this->when)($aggregate);
+            $callableOrCommand = $this->when;
+            $return = null;
+
+            if ($callableOrCommand instanceof Closure) {
+                $return = $callableOrCommand($aggregate);
+            } else {
+                foreach (HandlerFinder::findInClass($this->aggregateClass()) as $handler) {
+                    if (!$callableOrCommand instanceof $handler->commandClass) {
+                        continue;
+                    }
+
+                    $reflection = new ReflectionClass($this->aggregateClass());
+                    $reflectionMethod = $reflection->getMethod($handler->method);
+
+                    $return = $reflectionMethod->invokeArgs(
+                        $handler->static ? null : $aggregate,
+                        [
+                            $callableOrCommand,
+                            ...$this->parameters,
+                        ],
+                    );
+                }
+            }
 
             if ($aggregate !== null && $return instanceof AggregateRoot) {
                 throw new AggregateAlreadySet();
@@ -107,6 +136,7 @@ abstract class AggregateRootTestCase extends TestCase
     {
         $this->givenEvents = [];
         $this->when = null;
+        $this->parameters = [];
         $this->expectedEvents = [];
         $this->expectedException = null;
         $this->expectedExceptionMessage = null;

@@ -10,12 +10,14 @@ use Patchlevel\EventSourcing\PhpUnit\Test\AggregateAlreadySet;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use Patchlevel\EventSourcing\PhpUnit\Test\NoAggregateCreated;
 use Patchlevel\EventSourcing\PhpUnit\Test\NoWhenProvided;
+use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\CreateProfile;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\Email;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\Profile;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\ProfileCreated;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\ProfileError;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\ProfileId;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\ProfileVisited;
+use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\VisitProfile;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -114,7 +116,7 @@ final class AggregateRootTestCaseTest extends TestCase
                 ),
             )
             ->when(
-                static fn (Profile $profile) => $profile->visitProfile(ProfileId::fromString('2')),
+                static fn (Profile $profile) => $profile->visitProfile(new VisitProfile(ProfileId::fromString('2'))),
             )
             ->then(
                 new ProfileVisited(ProfileId::fromString('2')),
@@ -136,7 +138,7 @@ final class AggregateRootTestCaseTest extends TestCase
                 ),
             )
             ->when(
-                static fn (Profile $profile) => $profile->visitProfile(ProfileId::fromString('2')),
+                static fn (Profile $profile) => $profile->visitProfile(new VisitProfile(ProfileId::fromString('2'))),
             )
             ->then(
                 new ProfileVisited(ProfileId::fromString('2')),
@@ -153,7 +155,7 @@ final class AggregateRootTestCaseTest extends TestCase
 
         $test
             ->when(
-                static fn () => Profile::createProfile(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')),
+                static fn () => Profile::createProfile(new CreateProfile(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de'))),
             )
             ->then(
                 new ProfileCreated(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')),
@@ -170,7 +172,7 @@ final class AggregateRootTestCaseTest extends TestCase
         $test
             ->given()
             ->when(
-                static fn () => Profile::createProfile(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')),
+                static fn () => Profile::createProfile(new CreateProfile(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de'))),
             )
             ->then(
                 new ProfileCreated(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')),
@@ -186,7 +188,7 @@ final class AggregateRootTestCaseTest extends TestCase
 
         $test
             ->when(
-                static fn () => Profile::createProfile(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')),
+                static fn () => Profile::createProfile(new CreateProfile(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de'))),
             )
             ->then(
                 new ProfileCreated(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')),
@@ -225,7 +227,7 @@ final class AggregateRootTestCaseTest extends TestCase
                 ),
             )
             ->when(
-                static fn () => Profile::createProfile(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')),
+                static fn () => Profile::createProfile(new CreateProfile(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de'))),
             )
             ->then(
                 new ProfileCreated(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')),
@@ -248,7 +250,7 @@ final class AggregateRootTestCaseTest extends TestCase
                 ),
             )
             ->when(
-                static fn (Profile $profile) => $profile->visitProfile(ProfileId::fromString('2')),
+                static fn (Profile $profile) => $profile->visitProfile(new VisitProfile(ProfileId::fromString('2'))),
             )
             ->then(
                 new ProfileVisited(ProfileId::fromString('2')),
@@ -280,6 +282,54 @@ final class AggregateRootTestCaseTest extends TestCase
         $test->assert();
     }
 
+    public function testCreationWithCommand(): void
+    {
+        $test = $this->getTester();
+
+        $test
+            ->when(new CreateProfile(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')))
+            ->then(new ProfileCreated(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')));
+
+        $test->assert();
+        self::assertSame(1, $test::getCount());
+    }
+
+    public function testVisitedWithCommand(): void
+    {
+        $test = $this->getTester();
+
+        $test
+            ->given(
+                new ProfileCreated(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+            )
+            ->when(new VisitProfile(ProfileId::fromString('2')))
+            ->then(new ProfileVisited(ProfileId::fromString('2')));
+
+        $test->assert();
+        self::assertSame(1, $test::getCount());
+    }
+
+    public function testVisitedWithCommandWithParams(): void
+    {
+        $test = $this->getTester();
+
+        $test
+            ->given(
+                new ProfileCreated(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+            )
+            ->when(new VisitProfile(ProfileId::fromString('2')), 'foo')
+            ->then(new ProfileVisited(ProfileId::fromString('2'), 'foo'));
+
+        $test->assert();
+        self::assertSame(1, $test::getCount());
+    }
+
     /** @return Generator<array{array<object>, array<Closure>, array<object>}> */
     public static function provideVariousTestCases(): iterable
     {
@@ -288,7 +338,7 @@ final class AggregateRootTestCaseTest extends TestCase
                 new ProfileCreated(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')),
             ],
             [
-                static fn (Profile $profile) => $profile->visitProfile(ProfileId::fromString('2')),
+                static fn (Profile $profile) => $profile->visitProfile(new VisitProfile(ProfileId::fromString('2'))),
             ],
             [
                 new ProfileVisited(ProfileId::fromString('2')),
@@ -298,7 +348,7 @@ final class AggregateRootTestCaseTest extends TestCase
         yield [
             [],
             [
-                static fn () => Profile::createProfile(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')),
+                static fn () => Profile::createProfile(new CreateProfile(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de'))),
             ],
             [
                 new ProfileCreated(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')),
