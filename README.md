@@ -53,7 +53,7 @@ final class ProfileTest extends AggregateRootTestCase
 }
 ```
 
-You can also test multiple calls and events:
+You can also provide multiple given events and expect multiple events:
 
 ```php
 final class ProfileTest extends AggregateRootTestCase
@@ -68,16 +68,17 @@ final class ProfileTest extends AggregateRootTestCase
                     ProfileId::fromString('1'),
                     Email::fromString('hq@patchlevel.de'),
                 ),
+                new ProfileVisited(ProfileId::fromString('2')),
             )
             ->when(
-                static fn (Profile $profile) => $profile->visitProfile(ProfileId::fromString('2')),
-                static fn (Profile $profile) => $profile->visitProfile(ProfileId::fromString('2')),
-                static fn (Profile $profile) => $profile->visitProfile(ProfileId::fromString('2')),
+                static function (Profile $profile) {
+                    $profile->visitProfile(ProfileId::fromString('3'));
+                    $profile->visitProfile(ProfileId::fromString('4'));
+                }
             )
             ->then(
-                new ProfileVisited(ProfileId::fromString('2')),
-                new ProfileVisited(ProfileId::fromString('2')),
-                new ProfileVisited(ProfileId::fromString('2')),
+                new ProfileVisited(ProfileId::fromString('3')),
+                new ProfileVisited(ProfileId::fromString('4')),
             );
     }
 }
