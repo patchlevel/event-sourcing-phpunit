@@ -7,6 +7,7 @@ namespace Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture;
 use Patchlevel\EventSourcing\Aggregate\BasicAggregateRoot;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
+use Patchlevel\EventSourcing\Attribute\Handle;
 use Patchlevel\EventSourcing\Attribute\Id;
 
 #[Aggregate('profile')]
@@ -27,17 +28,19 @@ final class Profile extends BasicAggregateRoot
         return $this->email;
     }
 
-    public static function createProfile(ProfileId $id, Email $email): self
+    #[Handle]
+    public static function createProfile(CreateProfile $createProfile): self
     {
         $self = new self();
-        $self->recordThat(new ProfileCreated($id, $email));
+        $self->recordThat(new ProfileCreated($createProfile->id, $createProfile->email));
 
         return $self;
     }
 
-    public function visitProfile(ProfileId $profileId): void
+    #[Handle]
+    public function visitProfile(VisitProfile $visitProfile, string|null $token = null): void
     {
-        $this->recordThat(new ProfileVisited($profileId));
+        $this->recordThat(new ProfileVisited($visitProfile->id, $token));
     }
 
     public function throwException(): void

@@ -121,6 +121,48 @@ final class ProfileTest extends AggregateRootTestCase
 }
 ```
 
+### Using Commandbus like syntax
+
+When using the command bus and the `#[Handle]` attributes in your aggregate you can also provide the command directly
+for the `when` method.
+
+```php
+final class ProfileTest extends AggregateRootTestCase
+{ 
+    // protected function aggregateClass(): string;
+    
+    public function testBehaviour(): void
+    {
+        $this
+            ->when(new CreateProfile(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')))
+            ->then(new ProfileCreated(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')));
+    }
+}
+```
+
+If more parameters than the command is needed, these can also be provided as additional parameters for `when`. In this
+example the we need a string which will be directly passed to the event.
+
+```php
+final class ProfileTest extends AggregateRootTestCase
+{ 
+    // protected function aggregateClass(): string;
+    
+    public function testBehaviour(): void
+    {
+        $this
+            ->given(
+                new ProfileCreated(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+            )
+            ->when(new VisitProfile(ProfileId::fromString('2')), 'Extra Parameter / Dependency')
+            ->then(new ProfileVisited(ProfileId::fromString('2'), 'Extra Parameter / Dependency'));
+    }
+}
+```
+
 ## Testing Subscriber
 
 For testing a subscriber there is a utility class which you can use. Using `SubscriberUtilities` will provide you a
