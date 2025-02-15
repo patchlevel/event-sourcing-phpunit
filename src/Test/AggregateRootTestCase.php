@@ -67,6 +67,10 @@ abstract class AggregateRootTestCase extends TestCase
     #[After]
     final public function assert(): self
     {
+        if ($this->when === null) {
+            throw new NoWhenProvided();
+        }
+
         $aggregate = null;
 
         if ($this->givenEvents) {
@@ -74,16 +78,14 @@ abstract class AggregateRootTestCase extends TestCase
         }
 
         try {
-            if ($this->when !== null) {
-                $return = ($this->when)($aggregate);
+            $return = ($this->when)($aggregate);
 
-                if ($aggregate !== null && $return instanceof AggregateRoot) {
-                    throw new AggregateAlreadySet();
-                }
+            if ($aggregate !== null && $return instanceof AggregateRoot) {
+                throw new AggregateAlreadySet();
+            }
 
-                if ($aggregate === null) {
-                    $aggregate = $return;
-                }
+            if ($aggregate === null) {
+                $aggregate = $return;
             }
         } catch (Throwable $throwable) {
             $this->handleException($throwable);

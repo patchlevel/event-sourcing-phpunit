@@ -9,6 +9,7 @@ use Generator;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateAlreadySet;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use Patchlevel\EventSourcing\PhpUnit\Test\NoAggregateCreated;
+use Patchlevel\EventSourcing\PhpUnit\Test\NoWhenProvided;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\Email;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\Profile;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\ProfileCreated;
@@ -255,9 +256,28 @@ final class AggregateRootTestCaseTest extends TestCase
 
         $test->reset();
 
-        $this->expectException(NoAggregateCreated::class);
+        $this->expectException(NoWhenProvided::class);
         $test->assert();
         self::assertSame(1, $test::getCount());
+    }
+
+    public function testNoWhen(): void
+    {
+        $test = $this->getTester();
+
+        $test
+            ->given(
+                new ProfileCreated(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+            )
+            ->then(
+                new ProfileVisited(ProfileId::fromString('2')),
+            );
+
+        $this->expectException(NoWhenProvided::class);
+        $test->assert();
     }
 
     /** @return Generator<array{array<object>, array<Closure>, array<object>}> */

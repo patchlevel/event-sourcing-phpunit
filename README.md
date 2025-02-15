@@ -13,8 +13,6 @@ project when using PHPUnit. It comes with utilities for aggregates and subscribe
 composer require --dev patchlevel/event-sourcing-phpunit
 ```
 
-## Given / When / Then
-
 ## Testing Aggregates
 
 There is a special `TestCase` for aggregate tests which you can extend from. Extending from `AggregateRootTestCase`
