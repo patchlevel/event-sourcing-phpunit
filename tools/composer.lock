@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4c6aa88e20e92ec0309c35d0f351890e",
+    "content-hash": "36199b661351e9dd9d1a0a5b444dffc3",
     "packages": [
         {
             "name": "azjezz/psl",
@@ -1256,16 +1256,16 @@
         },
         {
             "name": "revolt/event-loop",
-            "version": "v1.0.6",
+            "version": "v1.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/revoltphp/event-loop.git",
-                "reference": "25de49af7223ba039f64da4ae9a28ec2d10d0254"
+                "reference": "09bf1bf7f7f574453efe43044b06fafe12216eb3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/revoltphp/event-loop/zipball/25de49af7223ba039f64da4ae9a28ec2d10d0254",
-                "reference": "25de49af7223ba039f64da4ae9a28ec2d10d0254",
+                "url": "https://api.github.com/repos/revoltphp/event-loop/zipball/09bf1bf7f7f574453efe43044b06fafe12216eb3",
+                "reference": "09bf1bf7f7f574453efe43044b06fafe12216eb3",
                 "shasum": ""
             },
             "require": {
@@ -1322,9 +1322,9 @@
             ],
             "support": {
                 "issues": "https://github.com/revoltphp/event-loop/issues",
-                "source": "https://github.com/revoltphp/event-loop/tree/v1.0.6"
+                "source": "https://github.com/revoltphp/event-loop/tree/v1.0.7"
             },
-            "time": "2023-11-30T05:34:44+00:00"
+            "time": "2025-01-25T19:27:39+00:00"
         },
         {
             "name": "roave/backward-compatibility-check",
@@ -1401,16 +1401,16 @@
         },
         {
             "name": "roave/better-reflection",
-            "version": "6.55.0",
+            "version": "6.57.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/BetterReflection.git",
-                "reference": "42e750c4e806ca1ff74959da2e221952f8bebee0"
+                "reference": "d5fa8e106a1a046ea9b9a79e4ce95c6b6c158ae0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/BetterReflection/zipball/42e750c4e806ca1ff74959da2e221952f8bebee0",
-                "reference": "42e750c4e806ca1ff74959da2e221952f8bebee0",
+                "url": "https://api.github.com/repos/Roave/BetterReflection/zipball/d5fa8e106a1a046ea9b9a79e4ce95c6b6c158ae0",
+                "reference": "d5fa8e106a1a046ea9b9a79e4ce95c6b6c158ae0",
                 "shasum": ""
             },
             "require": {
@@ -1424,7 +1424,7 @@
             },
             "require-dev": {
                 "phpbench/phpbench": "^1.4.0",
-                "phpunit/phpunit": "^11.5.6"
+                "phpunit/phpunit": "^11.5.7"
             },
             "suggest": {
                 "composer/composer": "Required to use the ComposerSourceLocator"
@@ -1464,9 +1464,9 @@
             "description": "Better Reflection - an improved code reflection API",
             "support": {
                 "issues": "https://github.com/Roave/BetterReflection/issues",
-                "source": "https://github.com/Roave/BetterReflection/tree/6.55.0"
+                "source": "https://github.com/Roave/BetterReflection/tree/6.57.0"
             },
-            "time": "2025-02-06T12:13:01+00:00"
+            "time": "2025-02-12T20:28:58+00:00"
         },
         {
             "name": "seld/jsonlint",
@@ -2720,7 +2720,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": "~8.1.0 || ~8.2.0 || ~8.3.0"
+        "php": "~8.2.0 || ~8.3.0 || ~8.4.0"
     },
     "platform-dev": {},
     "plugin-api-version": "2.6.0"
