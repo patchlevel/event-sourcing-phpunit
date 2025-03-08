@@ -11,7 +11,7 @@ use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use Patchlevel\EventSourcing\PhpUnit\Test\NoAggregateCreated;
 use Patchlevel\EventSourcing\PhpUnit\Test\NoWhenProvided;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\CreateProfile;
-use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\CreateProfileException;
+use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\CreateProfileWithFailure;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\Email;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\Profile;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\ProfileCreated;
@@ -111,7 +111,7 @@ final class AggregateRootTestCaseTest extends TestCase
 
         $test
             ->when(
-                new CreateProfileException(
+                new CreateProfileWithFailure(
                     ProfileId::fromString('1'),
                     Email::fromString('hq@patchlevel.de'),
                 ),

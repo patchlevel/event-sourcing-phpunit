@@ -38,7 +38,7 @@ final class Profile extends BasicAggregateRoot
     }
 
     #[Handle]
-    public static function createProfileException(CreateProfileException $createProfile): void
+    public static function createProfileException(CreateProfileWithFailure $createProfile): void
     {
         $self = new self();
         $self->throwException();

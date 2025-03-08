@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture;
 
-final readonly class CreateProfileException
+final readonly class CreateProfileWithFailure
 {
     public function __construct(
         public ProfileId $id,
