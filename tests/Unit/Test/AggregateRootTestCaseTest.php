@@ -11,6 +11,7 @@ use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use Patchlevel\EventSourcing\PhpUnit\Test\NoAggregateCreated;
 use Patchlevel\EventSourcing\PhpUnit\Test\NoWhenProvided;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\CreateProfile;
+use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\CreateProfileException;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\Email;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\Profile;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\ProfileCreated;
@@ -40,7 +41,7 @@ final class AggregateRootTestCaseTest extends TestCase
             ->expectsException(ProfileError::class);
 
         $test->assert();
-        self::assertSame(2, $test::getCount());
+        self::assertSame(1, $test::getCount());
     }
 
     public function testExceptionMessage(): void
@@ -60,7 +61,7 @@ final class AggregateRootTestCaseTest extends TestCase
             ->expectsExceptionMessage('throwing so that you can catch it!');
 
         $test->assert();
-        self::assertSame(2, $test::getCount());
+        self::assertSame(1, $test::getCount());
     }
 
     public function testExceptionAndMessage(): void
@@ -81,7 +82,7 @@ final class AggregateRootTestCaseTest extends TestCase
             ->expectsExceptionMessage('throwing so that you can catch it!');
 
         $test->assert();
-        self::assertSame(3, $test::getCount());
+        self::assertSame(2, $test::getCount());
     }
 
     public function testExceptionUncatched(): void
@@ -100,6 +101,24 @@ final class AggregateRootTestCaseTest extends TestCase
             );
 
         $this->expectException(ProfileError::class);
+        $test->assert();
+        self::assertSame(1, $test::getCount());
+    }
+
+    public function testExceptionWhenCreating(): void
+    {
+        $test = $this->getTester();
+
+        $test
+            ->when(
+                new CreateProfileException(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+            )
+            ->expectsException(ProfileError::class)
+            ->expectsExceptionMessage('throwing so that you can catch it!');
+
         $test->assert();
         self::assertSame(2, $test::getCount());
     }

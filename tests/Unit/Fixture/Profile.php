@@ -38,6 +38,13 @@ final class Profile extends BasicAggregateRoot
     }
 
     #[Handle]
+    public static function createProfileException(CreateProfileException $createProfile): void
+    {
+        $self = new self();
+        $self->throwException();
+    }
+
+    #[Handle]
     public function visitProfile(VisitProfile $visitProfile, string|null $token = null): void
     {
         $this->recordThat(new ProfileVisited($visitProfile->id, $token));

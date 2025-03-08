@@ -118,6 +118,8 @@ abstract class AggregateRootTestCase extends TestCase
             }
         } catch (Throwable $throwable) {
             $this->handleException($throwable);
+
+            return $this;
         }
 
         if (!$aggregate instanceof AggregateRoot) {
