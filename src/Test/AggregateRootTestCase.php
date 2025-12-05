@@ -127,6 +127,8 @@ abstract class AggregateRootTestCase extends TestCase
             return $this;
         }
 
+        $this->expectedExceptionWasNotThrown();
+
         if (!$aggregate instanceof AggregateRoot) {
             throw new NoAggregateCreated();
         }
@@ -186,5 +188,25 @@ abstract class AggregateRootTestCase extends TestCase
         if (!$checked) {
             throw $throwable;
         }
+    }
+
+    private function expectedExceptionWasNotThrown(): void
+    {
+        if ($this->expectedException !== null) {
+            self::assertThat(null, new ExceptionConstraint($this->expectedException));
+        }
+
+        if ($this->expectedExceptionMessage === null) {
+            return;
+        }
+
+        self::assertThat(
+            null,
+            new ExceptionMessageIsOrContains($this->expectedExceptionMessage),
+            sprintf(
+                'Failed asserting that exception with message "%s" is thrown',
+                $this->expectedExceptionMessage,
+            ),
+        );
     }
 }
