@@ -55,9 +55,13 @@ final class SubscriberUtilities
         $subscriberAccessors = $this->subscriberAccessorRepository->all();
 
         foreach ($events as $event) {
+            if (!$event instanceof Message) {
+                $event = Message::create($event);
+            }
+
             foreach ($subscriberAccessors as $subscriberAccessor) {
-                foreach ($subscriberAccessor->subscribeMethods($event::class) as $subscribeMethod) {
-                    $subscribeMethod(Message::create($event));
+                foreach ($subscriberAccessor->subscribeMethods($event->event()::class) as $subscribeMethod) {
+                    $subscribeMethod($event);
                 }
             }
         }

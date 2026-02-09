@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Test;
 
+use DateTimeImmutable;
 use Patchlevel\EventSourcing\Attribute\Projector;
 use Patchlevel\EventSourcing\Attribute\Setup;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Patchlevel\EventSourcing\Attribute\Teardown;
+use Patchlevel\EventSourcing\Message\Message;
 use Patchlevel\EventSourcing\PhpUnit\Test\SubscriberUtilities;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\Email;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\ProfileCreated;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\ProfileId;
+use Patchlevel\EventSourcing\Store\Header\RecordedOnHeader;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -40,6 +43,34 @@ final class SubscriberUtilitiesTest extends TestCase
         );
 
         self::assertSame(1, $subscriber->called);
+    }
+
+    public function testCanPassMessagesWithHeaders(): void
+    {
+        $recordedOn = new DateTimeImmutable('now');
+        $subscriber = new #[Projector('test')]
+        class {
+            public DateTimeImmutable|null $recordedOn = null;
+
+            #[Subscribe(ProfileCreated::class)]
+            public function run(ProfileCreated $event, DateTimeImmutable $recordedOn): void
+            {
+                $this->recordedOn = $recordedOn;
+            }
+        };
+
+        $util = new SubscriberUtilities($subscriber);
+        $util->executeRun(
+            Message::createWithHeaders(
+                new ProfileCreated(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+                [new RecordedOnHeader($recordedOn)],
+            ),
+        );
+
+        self::assertEquals($recordedOn, $subscriber->recordedOn);
     }
 
     public function testRunNotFound(): void
