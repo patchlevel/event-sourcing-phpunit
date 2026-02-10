@@ -167,7 +167,7 @@ final class ProfileTest extends AggregateRootTestCase
 
 For testing a subscriber there is a utility class which you can use. Using `SubscriberUtilities` will provide you a
 bunch of dx features which makes the testing easier. First, you will need to provide the utility class the subscriptions
-you will want to test, this is done when initialiszing the class. After that, you can call these 3 methods:
+you will want to test, this is done when initializing the class. After that, you can call these 3 methods:
 `executeSetup`, `executeRun` and `executeTeardown`. These methods will be calling the right methods which are defined
 via the attributes. For our example we are taking as simplified subscriber:
 
@@ -232,4 +232,56 @@ final class ProfileSubscriberTest extends TestCase
 }
 ```
 
-This Util class can be used for integration or unit tests.
+This Util class can be used for integration or unit tests. 
+
+You can also pass `Message` instances with additional headers to the `executeRun` method. This allows testing 
+subscribers that rely on additional parameters like header information:
+
+
+```php
+use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Patchlevel\EventSourcing\Attribute\Subscriber;
+use DateTimeImmutable;
+
+#[Subscriber('profile_subscriber', RunMode::FromBeginning)]
+final class ProfileSubscriber
+{
+    #[Subscribe(ProfileCreated::class)]
+    public function run(ProfileCreated $event, DateTimeImmutable $recordedOn): void
+    {
+    }
+}
+```
+
+Add any headers you want in the test:
+
+```php
+use Patchlevel\EventSourcing\Attribute\Subscriber;
+use Patchlevel\EventSourcing\Message\Message;
+use Patchlevel\EventSourcing\Store\Header\RecordedOnHeader;
+use Patchlevel\EventSourcing\Subscription\RunMode;
+use Patchlevel\EventSourcing\PhpUnit\Test\SubscriberUtilities;
+use DateTimeImmutable;
+
+final class ProfileSubscriberTest extends TestCase
+{
+    use SubscriberUtilities;
+
+    public function testProfileCreated(): void 
+    {
+        /* Setup and Teardown as before */
+        
+        $util->executeRun(
+            Message::createWithHeaders(
+                new ProfileCreated(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+                [new RecordedOnHeader(new DateTimeImmutable('now'))],
+            )
+        );
+       
+       /* Your assertions */
+    }
+}
+```
