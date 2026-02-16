@@ -15,6 +15,9 @@ use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Throwable;
 
+use function array_filter;
+use function array_values;
+
 abstract class AggregateRootTestCase extends TestCase
 {
     /** @var array<object> */
@@ -24,8 +27,9 @@ abstract class AggregateRootTestCase extends TestCase
     /** @var array<mixed> */
     private array $parameters = [];
 
-    /** @var array<object> */
-    private array $expectedEvents = [];
+    /** @var array<object|Closure> */
+    private array $thenExpectations = [];
+
     /** @var class-string<Throwable>|null  */
     private string|null $expectedException = null;
     private string|null $expectedExceptionMessage = null;
@@ -49,9 +53,14 @@ abstract class AggregateRootTestCase extends TestCase
         return $this;
     }
 
+    /**
+     * @param object|Closure(object): void ...$events Expected events and/or callbacks for aggregate state assertions.
+     *                                                Closures receive the aggregate instance and are executed after event assertions.
+     *                                                Event order is preserved regardless of callback placement.
+     */
     final public function then(object ...$events): self
     {
-        $this->expectedEvents = $events;
+        $this->thenExpectations = $events;
 
         return $this;
     }
@@ -126,9 +135,16 @@ abstract class AggregateRootTestCase extends TestCase
             throw new NoAggregateCreated();
         }
 
+        $expectedEvents = array_values(array_filter($this->thenExpectations, static fn (object $item) => !$item instanceof Closure));
+        $expectationCallbacks = array_filter($this->thenExpectations, static fn (object $item) => $item instanceof Closure);
+
         $events = $aggregate->releaseEvents();
 
-        self::assertEquals($this->expectedEvents, $events, 'The events doesn\'t match the expected events.');
+        self::assertEquals($expectedEvents, $events, 'The events doesn\'t match the expected events.');
+
+        foreach ($expectationCallbacks as $callback) {
+            $callback($aggregate);
+        }
 
         return $this;
     }
@@ -139,7 +155,7 @@ abstract class AggregateRootTestCase extends TestCase
         $this->givenEvents = [];
         $this->when = null;
         $this->parameters = [];
-        $this->expectedEvents = [];
+        $this->thenExpectations = [];
         $this->expectedException = null;
         $this->expectedExceptionMessage = null;
     }
