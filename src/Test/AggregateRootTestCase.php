@@ -7,6 +7,7 @@ namespace Patchlevel\EventSourcing\PhpUnit\Test;
 use Closure;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\CommandBus\HandlerFinder;
+use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\Attributes\After;
 use PHPUnit\Framework\Attributes\Before;
 use PHPUnit\Framework\Constraint\Exception as ExceptionConstraint;
@@ -15,7 +16,6 @@ use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionFunction;
 use Throwable;
-use TypeError;
 
 use function array_filter;
 use function array_values;
@@ -33,7 +33,7 @@ abstract class AggregateRootTestCase extends TestCase
     /** @var array<object|Closure> */
     private array $thenExpectations = [];
 
-    /** @var class-string<Throwable>|null  */
+    /** @var class-string<Throwable>|null */
     private string|null $expectedException = null;
     private string|null $expectedExceptionMessage = null;
 
@@ -111,13 +111,7 @@ abstract class AggregateRootTestCase extends TestCase
                     $reflection = new ReflectionClass($this->aggregateClass());
                     $reflectionMethod = $reflection->getMethod($handler->method);
 
-                    $return = $reflectionMethod->invokeArgs(
-                        $handler->static ? null : $aggregate,
-                        [
-                            $callableOrCommand,
-                            ...$this->parameters,
-                        ],
-                    );
+                    $return = $reflectionMethod->invokeArgs($handler->static ? null : $aggregate, [$callableOrCommand, ...$this->parameters,]);
                 }
             }
 
@@ -138,8 +132,8 @@ abstract class AggregateRootTestCase extends TestCase
             throw new NoAggregateCreated();
         }
 
-        $expectedEvents = array_values(array_filter($this->thenExpectations, static fn (object $item) => !$item instanceof Closure));
-        $expectationCallbacks = array_filter($this->thenExpectations, static fn (object $item) => $item instanceof Closure);
+        $expectedEvents = array_values(array_filter($this->thenExpectations, static fn(object $item) => !$item instanceof Closure));
+        $expectationCallbacks = array_filter($this->thenExpectations, static fn(object $item) => $item instanceof Closure);
 
         $events = $aggregate->releaseEvents();
 
@@ -148,17 +142,18 @@ abstract class AggregateRootTestCase extends TestCase
         foreach ($expectationCallbacks as $callback) {
             try {
                 $callback($aggregate);
-            } catch (TypeError $e) {
+            } catch (AssertionFailedError $e) {
+                throw $e;
+            } catch (Throwable $t) {
                 $reflection = new ReflectionFunction($callback);
 
-                throw new TypeError(
+                self::fail(
                     sprintf(
-                        'Invalid then() callback defined in %s on line %d: %s',
+                        'then() callback defined in %s on line %d failed: %s',
                         $reflection->getFileName(),
                         $reflection->getStartLine(),
-                        $e->getMessage(),
+                        $t->getMessage(),
                     ),
-                    previous: $e,
                 );
             }
         }
@@ -182,22 +177,12 @@ abstract class AggregateRootTestCase extends TestCase
         $checked = false;
 
         if ($this->expectedException) {
-            self::assertThat(
-                $throwable,
-                new ExceptionConstraint(
-                    $this->expectedException,
-                ),
-            );
+            self::assertThat($throwable, new ExceptionConstraint($this->expectedException,));
             $checked = true;
         }
 
         if ($this->expectedExceptionMessage) {
-            self::assertThat(
-                $throwable->getMessage(),
-                new ExceptionMessageIsOrContains(
-                    $this->expectedExceptionMessage,
-                ),
-            );
+            self::assertThat($throwable->getMessage(), new ExceptionMessageIsOrContains($this->expectedExceptionMessage,));
             $checked = true;
         }
 

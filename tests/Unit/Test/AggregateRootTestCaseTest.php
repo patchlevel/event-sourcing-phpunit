@@ -19,10 +19,10 @@ use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\ProfileError;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\ProfileId;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\ProfileVisited;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\VisitProfile;
+use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use TypeError;
 
 #[CoversClass(AggregateRootTestCase::class)]
 final class AggregateRootTestCaseTest extends TestCase
@@ -504,8 +504,8 @@ final class AggregateRootTestCaseTest extends TestCase
                 },
             );
 
-        $this->expectException(TypeError::class);
-        $this->expectExceptionMessageMatches('/Invalid then\(\) callback defined in/');
+        $this->expectException(AssertionFailedError::class);
+        $this->expectExceptionMessageMatches('/then\(\) callback defined in .+ failed:/');
         $test->assert();
     }
 
