@@ -349,6 +349,141 @@ final class AggregateRootTestCaseTest extends TestCase
         self::assertSame(1, $test::getCount());
     }
 
+    public function testThenWithEventAndCallback(): void
+    {
+        $test = $this->getTester();
+        $called = false;
+
+        $test
+            ->given(
+                new ProfileCreated(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+            )
+            ->when(
+                static fn (Profile $profile) => $profile->visitProfile(new VisitProfile(ProfileId::fromString('2'))),
+            )
+            ->then(
+                new ProfileVisited(ProfileId::fromString('2')),
+                static function (Profile $profile) use (&$called): void {
+                    self::assertSame('1', $profile->id()->toString());
+                    $called = true;
+                },
+            );
+
+        $test->assert();
+        self::assertTrue($called);
+        self::assertSame(3, $test::getCount());
+    }
+
+    public function testThenWithCallbackMixedBetweenEvents(): void
+    {
+        $test = $this->getTester();
+        $called = false;
+
+        $test
+            ->given(
+                new ProfileCreated(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+            )
+            ->when(
+                static fn (Profile $profile) => $profile->visitProfile(new VisitProfile(ProfileId::fromString('2'))),
+            )
+            ->then(
+                static function (Profile $profile) use (&$called): void {
+                    self::assertSame('1', $profile->id()->toString());
+                    $called = true;
+                },
+                new ProfileVisited(ProfileId::fromString('2')),
+            );
+
+        $test->assert();
+        self::assertTrue($called);
+        self::assertSame(3, $test::getCount());
+    }
+
+    public function testThenWithMultipleCallbacks(): void
+    {
+        $test = $this->getTester();
+        $callbackCallCount = 0;
+
+        $test
+            ->given(
+                new ProfileCreated(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+            )
+            ->when(
+                static fn (Profile $profile) => $profile->visitProfile(new VisitProfile(ProfileId::fromString('2'))),
+            )
+            ->then(
+                new ProfileVisited(ProfileId::fromString('2')),
+                static function () use (&$callbackCallCount): void {
+                    $callbackCallCount++;
+                },
+                static function () use (&$callbackCallCount): void {
+                    $callbackCallCount++;
+                },
+            );
+
+        $test->assert();
+        self::assertSame(2, $callbackCallCount);
+        self::assertSame(2, $test::getCount());
+    }
+
+    public function testThenWithCallbackOnCreation(): void
+    {
+        $test = $this->getTester();
+        $called = false;
+
+        $test
+            ->when(
+                static fn () => Profile::createProfile(new CreateProfile(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de'))),
+            )
+            ->then(
+                new ProfileCreated(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')),
+                static function (Profile $profile) use (&$called): void {
+                    self::assertSame('1', $profile->id()->toString());
+                    $called = true;
+                },
+            );
+
+        $test->assert();
+        self::assertTrue($called);
+        self::assertSame(3, $test::getCount());
+    }
+
+    public function testThenWithOnlyCallbacks(): void
+    {
+        $test = $this->getTester();
+        $called = false;
+
+        $test
+            ->given(
+                new ProfileCreated(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+            )
+            ->when(
+                static fn (Profile $profile) => $profile->emitsNoEvents(),
+            )
+            ->then(
+                static function (Profile $profile) use (&$called): void {
+                    self::assertSame('1', $profile->id()->toString());
+                    $called = true;
+                },
+            );
+
+        $test->assert();
+        self::assertTrue($called);
+        self::assertSame(3, $test::getCount());
+    }
+
     /** @return Generator<array{array<object>, array<Closure>, array<object>}> */
     public static function provideVariousTestCases(): iterable
     {

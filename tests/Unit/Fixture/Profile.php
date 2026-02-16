@@ -28,6 +28,10 @@ final class Profile extends BasicAggregateRoot
         return $this->email;
     }
 
+    public function emitsNoEvents(): void
+    {
+    }
+
     #[Handle]
     public static function createProfile(CreateProfile $createProfile): self
     {
