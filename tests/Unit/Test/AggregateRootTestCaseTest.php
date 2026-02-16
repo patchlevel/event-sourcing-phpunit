@@ -485,6 +485,31 @@ final class AggregateRootTestCaseTest extends TestCase
         self::assertSame(3, $test::getCount());
     }
 
+    public function testThenWithFailingAssertionInCallbackRethrowsOriginalError(): void
+    {
+        $test = $this->getTester();
+
+        $test
+            ->given(
+                new ProfileCreated(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+            )
+            ->when(
+                static fn (Profile $profile) => $profile->emitsNoEvents(),
+            )
+            ->then(
+                static function (Profile $profile): void {
+                    self::assertSame('unexpected-id', $profile->id()->toString(), 'Expected fail!');
+                },
+            );
+
+        $this->expectException(AssertionFailedError::class);
+        $this->expectExceptionMessage('Expected fail!');
+        $test->assert();
+    }
+
     public function testThenWithIncompatibleCallback(): void
     {
         $test = $this->getTester();
