@@ -22,6 +22,7 @@ use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\VisitProfile;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use TypeError;
 
 #[CoversClass(AggregateRootTestCase::class)]
 final class AggregateRootTestCaseTest extends TestCase
@@ -482,6 +483,30 @@ final class AggregateRootTestCaseTest extends TestCase
         $test->assert();
         self::assertTrue($called);
         self::assertSame(3, $test::getCount());
+    }
+
+    public function testThenWithIncompatibleCallback(): void
+    {
+        $test = $this->getTester();
+
+        $test
+            ->given(
+                new ProfileCreated(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+            )
+            ->when(
+                static fn (Profile $profile) => $profile->emitsNoEvents(),
+            )
+            ->then(
+                static function (string $incompatible): void {
+                },
+            );
+
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessageMatches('/Invalid then\(\) callback defined in/');
+        $test->assert();
     }
 
     /** @return Generator<array{array<object>, array<Closure>, array<object>}> */

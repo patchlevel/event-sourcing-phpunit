@@ -13,10 +13,13 @@ use PHPUnit\Framework\Constraint\Exception as ExceptionConstraint;
 use PHPUnit\Framework\Constraint\ExceptionMessageIsOrContains;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use ReflectionFunction;
 use Throwable;
+use TypeError;
 
 use function array_filter;
 use function array_values;
+use function sprintf;
 
 abstract class AggregateRootTestCase extends TestCase
 {
@@ -143,7 +146,21 @@ abstract class AggregateRootTestCase extends TestCase
         self::assertEquals($expectedEvents, $events, 'The events doesn\'t match the expected events.');
 
         foreach ($expectationCallbacks as $callback) {
-            $callback($aggregate);
+            try {
+                $callback($aggregate);
+            } catch (TypeError $e) {
+                $reflection = new ReflectionFunction($callback);
+
+                throw new TypeError(
+                    sprintf(
+                        'Invalid then() callback defined in %s on line %d: %s',
+                        $reflection->getFileName(),
+                        $reflection->getStartLine(),
+                        $e->getMessage(),
+                    ),
+                    previous: $e,
+                );
+            }
         }
 
         return $this;
