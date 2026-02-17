@@ -7,7 +7,6 @@ namespace Patchlevel\EventSourcing\PhpUnit\Test;
 use Closure;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\CommandBus\HandlerFinder;
-use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\Attributes\After;
 use PHPUnit\Framework\Attributes\Before;
 use PHPUnit\Framework\Constraint\Exception as ExceptionConstraint;
@@ -111,7 +110,7 @@ abstract class AggregateRootTestCase extends TestCase
                     $reflection = new ReflectionClass($this->aggregateClass());
                     $reflectionMethod = $reflection->getMethod($handler->method);
 
-                    $return = $reflectionMethod->invokeArgs($handler->static ? null : $aggregate, [$callableOrCommand, ...$this->parameters,]);
+                    $return = $reflectionMethod->invokeArgs($handler->static ? null : $aggregate, [$callableOrCommand, ...$this->parameters]);
                 }
             }
 
@@ -132,8 +131,8 @@ abstract class AggregateRootTestCase extends TestCase
             throw new NoAggregateCreated();
         }
 
-        $expectedEvents = array_values(array_filter($this->thenExpectations, static fn(object $item) => !$item instanceof Closure));
-        $expectationCallbacks = array_filter($this->thenExpectations, static fn(object $item) => $item instanceof Closure);
+        $expectedEvents = array_values(array_filter($this->thenExpectations, static fn (object $item) => !$item instanceof Closure));
+        $expectationCallbacks = array_filter($this->thenExpectations, static fn (object $item) => $item instanceof Closure);
 
         $events = $aggregate->releaseEvents();
 
@@ -142,8 +141,6 @@ abstract class AggregateRootTestCase extends TestCase
         foreach ($expectationCallbacks as $callback) {
             try {
                 $callback($aggregate);
-            } catch (AssertionFailedError $e) {
-                throw $e;
             } catch (Throwable $t) {
                 $reflection = new ReflectionFunction($callback);
 
@@ -177,12 +174,12 @@ abstract class AggregateRootTestCase extends TestCase
         $checked = false;
 
         if ($this->expectedException) {
-            self::assertThat($throwable, new ExceptionConstraint($this->expectedException,));
+            self::assertThat($throwable, new ExceptionConstraint($this->expectedException));
             $checked = true;
         }
 
         if ($this->expectedExceptionMessage) {
-            self::assertThat($throwable->getMessage(), new ExceptionMessageIsOrContains($this->expectedExceptionMessage,));
+            self::assertThat($throwable->getMessage(), new ExceptionMessageIsOrContains($this->expectedExceptionMessage));
             $checked = true;
         }
 
