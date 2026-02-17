@@ -13,7 +13,12 @@ use PHPUnit\Framework\Constraint\Exception as ExceptionConstraint;
 use PHPUnit\Framework\Constraint\ExceptionMessageIsOrContains;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use ReflectionFunction;
 use Throwable;
+
+use function array_filter;
+use function array_values;
+use function sprintf;
 
 abstract class AggregateRootTestCase extends TestCase
 {
@@ -24,9 +29,10 @@ abstract class AggregateRootTestCase extends TestCase
     /** @var array<mixed> */
     private array $parameters = [];
 
-    /** @var array<object> */
-    private array $expectedEvents = [];
-    /** @var class-string<Throwable>|null  */
+    /** @var array<object|Closure> */
+    private array $thenExpectations = [];
+
+    /** @var class-string<Throwable>|null */
     private string|null $expectedException = null;
     private string|null $expectedExceptionMessage = null;
 
@@ -49,9 +55,14 @@ abstract class AggregateRootTestCase extends TestCase
         return $this;
     }
 
+    /**
+     * @param object|Closure(object): void ...$events Expected events and/or callbacks for aggregate state assertions.
+     *                                                Closures receive the aggregate instance and are executed after event assertions.
+     *                                                Event order is preserved regardless of callback placement.
+     */
     final public function then(object ...$events): self
     {
-        $this->expectedEvents = $events;
+        $this->thenExpectations = $events;
 
         return $this;
     }
@@ -99,13 +110,7 @@ abstract class AggregateRootTestCase extends TestCase
                     $reflection = new ReflectionClass($this->aggregateClass());
                     $reflectionMethod = $reflection->getMethod($handler->method);
 
-                    $return = $reflectionMethod->invokeArgs(
-                        $handler->static ? null : $aggregate,
-                        [
-                            $callableOrCommand,
-                            ...$this->parameters,
-                        ],
-                    );
+                    $return = $reflectionMethod->invokeArgs($handler->static ? null : $aggregate, [$callableOrCommand, ...$this->parameters]);
                 }
             }
 
@@ -126,9 +131,29 @@ abstract class AggregateRootTestCase extends TestCase
             throw new NoAggregateCreated();
         }
 
+        $expectedEvents = array_values(array_filter($this->thenExpectations, static fn (object $item) => !$item instanceof Closure));
+        $expectationCallbacks = array_filter($this->thenExpectations, static fn (object $item) => $item instanceof Closure);
+
         $events = $aggregate->releaseEvents();
 
-        self::assertEquals($this->expectedEvents, $events, 'The events doesn\'t match the expected events.');
+        self::assertEquals($expectedEvents, $events, 'The events doesn\'t match the expected events.');
+
+        foreach ($expectationCallbacks as $callback) {
+            try {
+                $callback($aggregate);
+            } catch (Throwable $t) {
+                $reflection = new ReflectionFunction($callback);
+
+                self::fail(
+                    sprintf(
+                        'then() callback defined in %s on line %d failed: %s',
+                        $reflection->getFileName(),
+                        $reflection->getStartLine(),
+                        $t->getMessage(),
+                    ),
+                );
+            }
+        }
 
         return $this;
     }
@@ -139,7 +164,7 @@ abstract class AggregateRootTestCase extends TestCase
         $this->givenEvents = [];
         $this->when = null;
         $this->parameters = [];
-        $this->expectedEvents = [];
+        $this->thenExpectations = [];
         $this->expectedException = null;
         $this->expectedExceptionMessage = null;
     }
@@ -149,22 +174,12 @@ abstract class AggregateRootTestCase extends TestCase
         $checked = false;
 
         if ($this->expectedException) {
-            self::assertThat(
-                $throwable,
-                new ExceptionConstraint(
-                    $this->expectedException,
-                ),
-            );
+            self::assertThat($throwable, new ExceptionConstraint($this->expectedException));
             $checked = true;
         }
 
         if ($this->expectedExceptionMessage) {
-            self::assertThat(
-                $throwable->getMessage(),
-                new ExceptionMessageIsOrContains(
-                    $this->expectedExceptionMessage,
-                ),
-            );
+            self::assertThat($throwable->getMessage(), new ExceptionMessageIsOrContains($this->expectedExceptionMessage));
             $checked = true;
         }
 

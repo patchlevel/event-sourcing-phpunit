@@ -33,9 +33,9 @@ When this is done, you already can start testing your behaviour. For example tes
 
 ```php
 final class ProfileTest extends AggregateRootTestCase
-{ 
+{
     // protected function aggregateClass(): string;
-    
+
     public function testBehaviour(): void
     {
         $this
@@ -55,9 +55,9 @@ You can also provide multiple given events and expect multiple events:
 
 ```php
 final class ProfileTest extends AggregateRootTestCase
-{ 
+{
     // protected function aggregateClass(): string;
-    
+
     public function testBehaviour(): void
     {
         $this
@@ -86,9 +86,9 @@ You can also test the creation of the aggregate:
 
 ```php
 final class ProfileTest extends AggregateRootTestCase
-{ 
+{
     // protected function aggregateClass(): string;
-    
+
     public function testBehaviour(): void
     {
         $this
@@ -102,9 +102,9 @@ And expect an exception and the message of it:
 
 ```php
 final class ProfileTest extends AggregateRootTestCase
-{ 
+{
     // protected function aggregateClass(): string;
-    
+
     public function testBehaviour(): void
     {
         $this
@@ -121,6 +121,39 @@ final class ProfileTest extends AggregateRootTestCase
 }
 ```
 
+### Asserting aggregate state
+
+You can pass closures to `then()` to assert on the aggregate's state after the events have been applied. This is useful
+when your aggregate exposes state via public properties or getters that are set in `apply` methods. Closures receive the
+aggregate instance and are executed after the event assertion. You can mix closures and expected events freely — event
+order is preserved regardless of callback placement.
+
+```php
+final class ProfileTest extends AggregateRootTestCase
+{
+    // protected function aggregateClass(): string;
+
+    public function testBehaviour(): void
+    {
+        $this
+            ->given(
+                new ProfileCreated(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+            )
+            ->when(static fn (Profile $profile) => $profile->visitProfile(ProfileId::fromString('2')))
+            ->then(
+                new ProfileVisited(ProfileId::fromString('2')),
+                static fn (Profile $profile) => self::assertSame('1', $profile->id()->toString()),
+            );
+    }
+}
+```
+
+> [!NOTE]
+> When `then()` receives only closures and no event objects, it strictly asserts that zero events were emitted.
+
 ### Using Commandbus like syntax
 
 When using the command bus and the `#[Handle]` attributes in your aggregate you can also provide the command directly
@@ -128,9 +161,9 @@ for the `when` method.
 
 ```php
 final class ProfileTest extends AggregateRootTestCase
-{ 
+{
     // protected function aggregateClass(): string;
-    
+
     public function testBehaviour(): void
     {
         $this
@@ -145,9 +178,9 @@ example the we need a string which will be directly passed to the event.
 
 ```php
 final class ProfileTest extends AggregateRootTestCase
-{ 
+{
     // protected function aggregateClass(): string;
-    
+
     public function testBehaviour(): void
     {
         $this
@@ -213,10 +246,10 @@ final class ProfileSubscriberTest extends TestCase
 {
     use SubscriberUtilities;
 
-    public function testProfileCreated(): void 
+    public function testProfileCreated(): void
     {
         $subscriber = new ProfileSubscriber(/* inject deps, if needed */);
-        
+
         $util = new SubscriberUtilities($subscriber);
         $util->executeSetup();
         $util->executeRun(
@@ -226,15 +259,15 @@ final class ProfileSubscriberTest extends TestCase
             )
         );
        $util->executeTeardown();
-     
+
         self::assertSame(3, $subscriber->count);
     }
 }
 ```
 
-This Util class can be used for integration or unit tests. 
+This Util class can be used for integration or unit tests.
 
-You can also pass `Message` instances with additional headers to the `executeRun` method. This allows testing 
+You can also pass `Message` instances with additional headers to the `executeRun` method. This allows testing
 subscribers that rely on additional parameters like header information:
 
 
@@ -267,10 +300,10 @@ final class ProfileSubscriberTest extends TestCase
 {
     use SubscriberUtilities;
 
-    public function testProfileCreated(): void 
+    public function testProfileCreated(): void
     {
         /* Setup and Teardown as before */
-        
+
         $util->executeRun(
             Message::createWithHeaders(
                 new ProfileCreated(
@@ -280,7 +313,7 @@ final class ProfileSubscriberTest extends TestCase
                 [new RecordedOnHeader(new DateTimeImmutable('now'))],
             )
         );
-       
+
        /* Your assertions */
     }
 }

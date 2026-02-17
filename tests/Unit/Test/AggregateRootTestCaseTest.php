@@ -19,6 +19,7 @@ use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\ProfileError;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\ProfileId;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\ProfileVisited;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\VisitProfile;
+use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -347,6 +348,190 @@ final class AggregateRootTestCaseTest extends TestCase
 
         $test->assert();
         self::assertSame(1, $test::getCount());
+    }
+
+    public function testThenWithEventAndCallback(): void
+    {
+        $test = $this->getTester();
+        $called = false;
+
+        $test
+            ->given(
+                new ProfileCreated(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+            )
+            ->when(
+                static fn (Profile $profile) => $profile->visitProfile(new VisitProfile(ProfileId::fromString('2'))),
+            )
+            ->then(
+                new ProfileVisited(ProfileId::fromString('2')),
+                static function (Profile $profile) use (&$called): void {
+                    self::assertSame('1', $profile->id()->toString());
+                    $called = true;
+                },
+            );
+
+        $test->assert();
+        self::assertTrue($called);
+        self::assertSame(3, $test::getCount());
+    }
+
+    public function testThenWithCallbackMixedBetweenEvents(): void
+    {
+        $test = $this->getTester();
+        $called = false;
+
+        $test
+            ->given(
+                new ProfileCreated(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+            )
+            ->when(
+                static fn (Profile $profile) => $profile->visitProfile(new VisitProfile(ProfileId::fromString('2'))),
+            )
+            ->then(
+                static function (Profile $profile) use (&$called): void {
+                    self::assertSame('1', $profile->id()->toString());
+                    $called = true;
+                },
+                new ProfileVisited(ProfileId::fromString('2')),
+            );
+
+        $test->assert();
+        self::assertTrue($called);
+        self::assertSame(3, $test::getCount());
+    }
+
+    public function testThenWithMultipleCallbacks(): void
+    {
+        $test = $this->getTester();
+        $callbackCallCount = 0;
+
+        $test
+            ->given(
+                new ProfileCreated(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+            )
+            ->when(
+                static fn (Profile $profile) => $profile->visitProfile(new VisitProfile(ProfileId::fromString('2'))),
+            )
+            ->then(
+                new ProfileVisited(ProfileId::fromString('2')),
+                static function () use (&$callbackCallCount): void {
+                    $callbackCallCount++;
+                },
+                static function () use (&$callbackCallCount): void {
+                    $callbackCallCount++;
+                },
+            );
+
+        $test->assert();
+        self::assertSame(2, $callbackCallCount);
+        self::assertSame(2, $test::getCount());
+    }
+
+    public function testThenWithCallbackOnCreation(): void
+    {
+        $test = $this->getTester();
+        $called = false;
+
+        $test
+            ->when(
+                static fn () => Profile::createProfile(new CreateProfile(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de'))),
+            )
+            ->then(
+                new ProfileCreated(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')),
+                static function (Profile $profile) use (&$called): void {
+                    self::assertSame('1', $profile->id()->toString());
+                    $called = true;
+                },
+            );
+
+        $test->assert();
+        self::assertTrue($called);
+        self::assertSame(3, $test::getCount());
+    }
+
+    public function testThenWithOnlyCallbacks(): void
+    {
+        $test = $this->getTester();
+        $called = false;
+
+        $test
+            ->given(
+                new ProfileCreated(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+            )
+            ->when(
+                static fn (Profile $profile) => $profile->emitsNoEvents(),
+            )
+            ->then(
+                static function (Profile $profile) use (&$called): void {
+                    self::assertSame('1', $profile->id()->toString());
+                    $called = true;
+                },
+            );
+
+        $test->assert();
+        self::assertTrue($called);
+        self::assertSame(3, $test::getCount());
+    }
+
+    public function testThenWithFailingAssertionInCallbackRethrowsOriginalError(): void
+    {
+        $test = $this->getTester();
+
+        $test
+            ->given(
+                new ProfileCreated(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+            )
+            ->when(
+                static fn (Profile $profile) => $profile->emitsNoEvents(),
+            )
+            ->then(
+                static function (Profile $profile): void {
+                    self::assertSame('unexpected-id', $profile->id()->toString(), 'Expected fail!');
+                },
+            );
+
+        $this->expectException(AssertionFailedError::class);
+        $this->expectExceptionMessage('Expected fail!');
+        $test->assert();
+    }
+
+    public function testThenWithIncompatibleCallback(): void
+    {
+        $test = $this->getTester();
+
+        $test
+            ->given(
+                new ProfileCreated(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+            )
+            ->when(
+                static fn (Profile $profile) => $profile->emitsNoEvents(),
+            )
+            ->then(
+                static function (string $incompatible): void {
+                },
+            );
+
+        $this->expectException(AssertionFailedError::class);
+        $this->expectExceptionMessageMatches('/then\(\) callback defined in .+ failed:/');
+        $test->assert();
     }
 
     /** @return Generator<array{array<object>, array<Closure>, array<object>}> */
