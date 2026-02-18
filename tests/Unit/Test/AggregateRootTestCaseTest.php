@@ -23,6 +23,7 @@ use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Throwable;
 
 #[CoversClass(AggregateRootTestCase::class)]
 final class AggregateRootTestCaseTest extends TestCase
@@ -84,6 +85,91 @@ final class AggregateRootTestCaseTest extends TestCase
 
         $test->assert();
         self::assertSame(2, $test::getCount());
+    }
+
+    public function testExceptionNotThrown(): void
+    {
+        $test = $this->getTester();
+
+        $test
+            ->given(
+                new ProfileCreated(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+            )
+            ->when(
+                static fn (Profile $profile) => $profile->visitProfile(new VisitProfile(ProfileId::fromString('2'))),
+            )
+            ->expectsException(ProfileError::class);
+
+        $exception = null;
+
+        try {
+            $test->assert();
+        } catch (Throwable $e) {
+            $exception = $e;
+        }
+
+        self::assertNotNull($exception);
+        self::assertSame('Failed asserting that exception of type "Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\ProfileError" is thrown.', $exception->getMessage());
+    }
+
+    public function testExceptionNotThrownWithMessageSpecified(): void
+    {
+        $test = $this->getTester();
+
+        $test
+            ->given(
+                new ProfileCreated(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+            )
+            ->when(
+                static fn (Profile $profile) => $profile->visitProfile(new VisitProfile(ProfileId::fromString('2'))),
+            )
+            ->expectsExceptionMessage('throwing so that you can catch it!');
+
+        $exception = null;
+
+        try {
+            $test->assert();
+        } catch (Throwable $e) {
+            $exception = $e;
+        }
+
+        self::assertNotNull($exception);
+        self::assertSame("Failed asserting that exception with message \"throwing so that you can catch it!\" is thrown\nFailed asserting that exception message '' contains 'throwing so that you can catch it!'.", $exception->getMessage());
+    }
+
+    public function testExceptionNotThrownAndMessageSpecified(): void
+    {
+        $test = $this->getTester();
+
+        $test
+            ->given(
+                new ProfileCreated(
+                    ProfileId::fromString('1'),
+                    Email::fromString('hq@patchlevel.de'),
+                ),
+            )
+            ->when(
+                static fn (Profile $profile) => $profile->visitProfile(new VisitProfile(ProfileId::fromString('2'))),
+            )
+            ->expectsException(ProfileError::class)
+            ->expectsExceptionMessage('throwing so that you can catch it!');
+
+        $exception = null;
+
+        try {
+            $test->assert();
+        } catch (Throwable $e) {
+            $exception = $e;
+        }
+
+        self::assertNotNull($exception);
+        self::assertSame('Failed asserting that exception of type "Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\ProfileError" is thrown.', $exception->getMessage());
     }
 
     public function testExceptionUncatched(): void
