@@ -13,6 +13,7 @@ use Patchlevel\EventSourcing\PhpUnit\Test\NoWhenProvided;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\CreateProfile;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\CreateProfileWithFailure;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\Email;
+use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\Notifier;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\Profile;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\ProfileCreated;
 use Patchlevel\EventSourcing\PhpUnit\Tests\Unit\Fixture\ProfileError;
@@ -232,29 +233,6 @@ final class AggregateRootTestCaseTest extends TestCase
         self::assertSame(1, $test::getCount());
     }
 
-    public function testVisitedDoubleAssert(): void
-    {
-        $test = $this->getTester();
-
-        $test
-            ->given(
-                new ProfileCreated(
-                    ProfileId::fromString('1'),
-                    Email::fromString('hq@patchlevel.de'),
-                ),
-            )
-            ->when(
-                static fn (Profile $profile) => $profile->visitProfile(new VisitProfile(ProfileId::fromString('2'))),
-            )
-            ->then(
-                new ProfileVisited(ProfileId::fromString('2')),
-            );
-
-        $test->assert();
-        $test->assert();
-        self::assertSame(2, $test::getCount());
-    }
-
     public function testCreation(): void
     {
         $test = $this->getTester();
@@ -310,7 +288,7 @@ final class AggregateRootTestCaseTest extends TestCase
 
         $test
             ->when(
-                static fn () => 'no aggregate as return',
+                static fn () => null,
             )
             ->then(
                 new ProfileVisited(ProfileId::fromString('2')),
@@ -340,6 +318,21 @@ final class AggregateRootTestCaseTest extends TestCase
             );
 
         $this->expectException(AggregateAlreadySet::class);
+        $test->assert();
+        self::assertSame(1, $test::getCount());
+    }
+
+    public function testCreationWithMock(): void
+    {
+        $test = $this->getTester();
+
+        $notifier = $this->createMock(Notifier::class);
+        $notifier->expects($this->once())->method('notify');
+
+        $test
+            ->when(new CreateProfile(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')), $notifier)
+            ->then(new ProfileCreated(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')));
+
         $test->assert();
         self::assertSame(1, $test::getCount());
     }

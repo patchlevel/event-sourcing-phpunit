@@ -28,10 +28,12 @@ abstract class AggregateRootTestCase extends TestCase
 
     /** @var array<mixed> */
     private array $parameters = [];
+    private object|null $aggregate = null;
 
     /** @var array<object|Closure> */
     private array $thenExpectations = [];
 
+    private Throwable|null $thrownException = null;
     /** @var class-string<Throwable>|null */
     private string|null $expectedException = null;
     private string|null $expectedExceptionMessage = null;
@@ -41,6 +43,7 @@ abstract class AggregateRootTestCase extends TestCase
 
     final public function given(object ...$events): self
     {
+        $this->aggregate = null;
         $this->givenEvents = $events;
 
         return $this;
@@ -51,6 +54,42 @@ abstract class AggregateRootTestCase extends TestCase
     {
         $this->when = $callable;
         $this->parameters = $parameters;
+
+        if ($this->givenEvents) {
+            $this->aggregate = $this->aggregateClass()::createFromEvents($this->givenEvents);
+        }
+
+        try {
+            $callableOrCommand = $this->when;
+            $return = null;
+
+            if ($callableOrCommand instanceof Closure) {
+                /** @var AggregateRoot|null $return */
+                $return = $callableOrCommand($this->aggregate);
+            } else {
+                foreach (HandlerFinder::findInClass($this->aggregateClass()) as $handler) {
+                    if (!$callableOrCommand instanceof $handler->commandClass) {
+                        continue;
+                    }
+
+                    $reflection = new ReflectionClass($this->aggregateClass());
+                    $reflectionMethod = $reflection->getMethod($handler->method);
+
+                    /** @var AggregateRoot|null $return */
+                    $return = $reflectionMethod->invokeArgs($handler->static ? null : $this->aggregate, [$callableOrCommand, ...$this->parameters]);
+                }
+            }
+
+            if ($this->aggregate !== null && $return instanceof AggregateRoot) {
+                throw new AggregateAlreadySet();
+            }
+
+            if ($this->aggregate === null) {
+                $this->aggregate = $return;
+            }
+        } catch (Throwable $throwable) {
+            $this->thrownException = $throwable;
+        }
 
         return $this;
     }
@@ -89,60 +128,28 @@ abstract class AggregateRootTestCase extends TestCase
             throw new NoWhenProvided();
         }
 
-        $aggregate = null;
-
-        if ($this->givenEvents) {
-            $aggregate = $this->aggregateClass()::createFromEvents($this->givenEvents);
-        }
-
-        try {
-            $callableOrCommand = $this->when;
-            $return = null;
-
-            if ($callableOrCommand instanceof Closure) {
-                $return = $callableOrCommand($aggregate);
-            } else {
-                foreach (HandlerFinder::findInClass($this->aggregateClass()) as $handler) {
-                    if (!$callableOrCommand instanceof $handler->commandClass) {
-                        continue;
-                    }
-
-                    $reflection = new ReflectionClass($this->aggregateClass());
-                    $reflectionMethod = $reflection->getMethod($handler->method);
-
-                    $return = $reflectionMethod->invokeArgs($handler->static ? null : $aggregate, [$callableOrCommand, ...$this->parameters]);
-                }
-            }
-
-            if ($aggregate !== null && $return instanceof AggregateRoot) {
-                throw new AggregateAlreadySet();
-            }
-
-            if ($aggregate === null) {
-                $aggregate = $return;
-            }
-        } catch (Throwable $throwable) {
-            $this->handleException($throwable);
+        if ($this->thrownException !== null) {
+            $this->handleException($this->thrownException);
 
             return $this;
         }
 
         $this->expectedExceptionWasNotThrown();
 
-        if (!$aggregate instanceof AggregateRoot) {
+        if (!$this->aggregate instanceof AggregateRoot) {
             throw new NoAggregateCreated();
         }
 
         $expectedEvents = array_values(array_filter($this->thenExpectations, static fn (object $item) => !$item instanceof Closure));
         $expectationCallbacks = array_filter($this->thenExpectations, static fn (object $item) => $item instanceof Closure);
 
-        $events = $aggregate->releaseEvents();
+        $events = $this->aggregate->releaseEvents();
 
         self::assertEquals($expectedEvents, $events, 'The events doesn\'t match the expected events.');
 
         foreach ($expectationCallbacks as $callback) {
             try {
-                $callback($aggregate);
+                $callback($this->aggregate);
             } catch (Throwable $t) {
                 $reflection = new ReflectionFunction($callback);
 
@@ -169,6 +176,8 @@ abstract class AggregateRootTestCase extends TestCase
         $this->thenExpectations = [];
         $this->expectedException = null;
         $this->expectedExceptionMessage = null;
+        $this->aggregate = null;
+        $this->thrownException = null;
     }
 
     private function handleException(Throwable $throwable): void

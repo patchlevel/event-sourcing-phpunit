@@ -33,10 +33,14 @@ final class Profile extends BasicAggregateRoot
     }
 
     #[Handle]
-    public static function createProfile(CreateProfile $createProfile): self
+    public static function createProfile(CreateProfile $createProfile, Notifier|null $notifier = null): self
     {
         $self = new self();
         $self->recordThat(new ProfileCreated($createProfile->id, $createProfile->email));
+
+        if ($notifier) {
+            $notifier->notify();
+        }
 
         return $self;
     }
