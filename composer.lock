@@ -534,16 +534,16 @@
         },
         {
             "name": "patchlevel/event-sourcing",
-            "version": "3.19.0",
+            "version": "3.19.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/patchlevel/event-sourcing.git",
-                "reference": "8e47cf54d30b7938b2a20a6130a9cfd8b443051d"
+                "reference": "bb9a5a7e8b9abcc6d5d527471d6d3b9bf125dc67"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/patchlevel/event-sourcing/zipball/8e47cf54d30b7938b2a20a6130a9cfd8b443051d",
-                "reference": "8e47cf54d30b7938b2a20a6130a9cfd8b443051d",
+                "url": "https://api.github.com/repos/patchlevel/event-sourcing/zipball/bb9a5a7e8b9abcc6d5d527471d6d3b9bf125dc67",
+                "reference": "bb9a5a7e8b9abcc6d5d527471d6d3b9bf125dc67",
                 "shasum": ""
             },
             "require": {
@@ -621,22 +621,22 @@
             ],
             "support": {
                 "issues": "https://github.com/patchlevel/event-sourcing/issues",
-                "source": "https://github.com/patchlevel/event-sourcing/tree/3.19.0"
+                "source": "https://github.com/patchlevel/event-sourcing/tree/3.19.1"
             },
-            "time": "2026-04-03T17:13:51+00:00"
+            "time": "2026-04-06T08:13:41+00:00"
         },
         {
             "name": "patchlevel/hydrator",
-            "version": "1.21.0",
+            "version": "1.22.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/patchlevel/hydrator.git",
-                "reference": "53048465863d9a60e8238f8c268f2c93ddfa7326"
+                "reference": "f5ed341c7b5669e72892b727851273faede8016a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/patchlevel/hydrator/zipball/53048465863d9a60e8238f8c268f2c93ddfa7326",
-                "reference": "53048465863d9a60e8238f8c268f2c93ddfa7326",
+                "url": "https://api.github.com/repos/patchlevel/hydrator/zipball/f5ed341c7b5669e72892b727851273faede8016a",
+                "reference": "f5ed341c7b5669e72892b727851273faede8016a",
                 "shasum": ""
             },
             "require": {
@@ -685,9 +685,9 @@
             ],
             "support": {
                 "issues": "https://github.com/patchlevel/hydrator/issues",
-                "source": "https://github.com/patchlevel/hydrator/tree/1.21.0"
+                "source": "https://github.com/patchlevel/hydrator/tree/1.22.1"
             },
-            "time": "2026-04-03T15:42:19+00:00"
+            "time": "2026-04-06T16:57:50+00:00"
         },
         {
             "name": "patchlevel/worker",
@@ -1866,16 +1866,16 @@
         },
         {
             "name": "sebastian/comparator",
-            "version": "8.0.0",
+            "version": "8.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/comparator.git",
-                "reference": "29b232ddc29c2b114c0358c69b3084e7c3da0d58"
+                "reference": "e35cd9e8bbc43142bc7d6db53ceb2b01c6ad95a3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/comparator/zipball/29b232ddc29c2b114c0358c69b3084e7c3da0d58",
-                "reference": "29b232ddc29c2b114c0358c69b3084e7c3da0d58",
+                "url": "https://api.github.com/repos/sebastianbergmann/comparator/zipball/e35cd9e8bbc43142bc7d6db53ceb2b01c6ad95a3",
+                "reference": "e35cd9e8bbc43142bc7d6db53ceb2b01c6ad95a3",
                 "shasum": ""
             },
             "require": {
@@ -1894,7 +1894,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "8.0-dev"
+                    "dev-main": "8.1-dev"
                 }
             },
             "autoload": {
@@ -1934,7 +1934,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/comparator/issues",
                 "security": "https://github.com/sebastianbergmann/comparator/security/policy",
-                "source": "https://github.com/sebastianbergmann/comparator/tree/8.0.0"
+                "source": "https://github.com/sebastianbergmann/comparator/tree/8.1.0"
             },
             "funding": [
                 {
@@ -1954,7 +1954,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-02-06T04:40:39+00:00"
+            "time": "2026-04-06T11:57:51+00:00"
         },
         {
             "name": "sebastian/complexity",
