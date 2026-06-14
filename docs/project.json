@@ -1,0 +1,8 @@
+{
+  "navigation": [
+    { "title": "Introduction", "file": "introduction.md" },
+    { "title": "Getting Started", "file": "getting-started.md" },
+    { "title": "Testing Aggregates", "file": "testing-aggregates.md" },
+    { "title": "Testing Subscribers", "file": "testing-subscribers.md" }
+  ]
+}

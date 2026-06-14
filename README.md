@@ -2,10 +2,17 @@
 [![Latest Stable Version](https://poser.pugx.org/patchlevel/event-sourcing-phpunit/v)](//packagist.org/packages/patchlevel/event-sourcing-phpunit)
 [![License](https://poser.pugx.org/patchlevel/event-sourcing-phpunit/license)](//packagist.org/packages/patchlevel/event-sourcing-phpunit)
 
-# Testing utilities
+# Event Sourcing PHPUnit
 
-With this library you can ease the testing for your [event-sourcing](https://github.com/patchlevel/event-sourcing)
-project when using PHPUnit. It comes with utilities for aggregates and subscribers.
+"Test your event-sourcing aggregates and subscribers with a clear given / when / then notation."
+
+## Features
+
+* A [given / when / then test case](https://patchlevel.dev/docs/event-sourcing-phpunit/latest/testing-aggregates) for aggregate behaviour
+* A `when` that also [dispatches commands](https://patchlevel.dev/docs/event-sourcing-phpunit/latest/testing-aggregates) through your `#[Handle]` methods
+* [Aggregate state assertions](https://patchlevel.dev/docs/event-sourcing-phpunit/latest/testing-aggregates) with closures
+* A [subscriber utility](https://patchlevel.dev/docs/event-sourcing-phpunit/latest/testing-subscribers) for setup, run and teardown
+* and much more...
 
 ## Installation
 
@@ -13,308 +20,18 @@ project when using PHPUnit. It comes with utilities for aggregates and subscribe
 composer require --dev patchlevel/event-sourcing-phpunit
 ```
 
-## Testing Aggregates
+## Documentation
 
-There is a special `TestCase` for aggregate tests which you can extend from. Extending from `AggregateRootTestCase`
-enables you to use the given / when / then notation. This makes it very clear what the test is doing. When extending the
-class you will need to implement a method which provides the FQCN of the aggregate you want to test.
+* Latest [Docs](https://patchlevel.dev/docs/event-sourcing-phpunit/latest)
+* Related [Blog](https://patchlevel.dev/blog)
 
-```php
-final class ProfileTest extends AggregateRootTestCase
-{
-    protected function aggregateClass(): string
-    {
-        return Profile::class;
-    }
-}
-```
+## Integration
 
-When this is done, you already can start testing your behaviour. For example testing that a event is recorded.
+* [event-sourcing](https://github.com/patchlevel/event-sourcing)
 
-```php
-final class ProfileTest extends AggregateRootTestCase
-{
-    // protected function aggregateClass(): string;
+## Contributing
 
-    public function testBehaviour(): void
-    {
-        $this
-            ->given(
-                new ProfileCreated(
-                    ProfileId::fromString('1'),
-                    Email::fromString('hq@patchlevel.de'),
-                ),
-            )
-            ->when(static fn (Profile $profile) => $profile->visitProfile(ProfileId::fromString('2')))
-            ->then(new ProfileVisited(ProfileId::fromString('2')));
-    }
-}
-```
+We are open to contributions as long as they are in line with
+our [BC-Policy](https://patchlevel.dev/our-backward-compatibility-promise).
 
-You can also provide multiple given events and expect multiple events:
-
-```php
-final class ProfileTest extends AggregateRootTestCase
-{
-    // protected function aggregateClass(): string;
-
-    public function testBehaviour(): void
-    {
-        $this
-            ->given(
-                new ProfileCreated(
-                    ProfileId::fromString('1'),
-                    Email::fromString('hq@patchlevel.de'),
-                ),
-                new ProfileVisited(ProfileId::fromString('2')),
-            )
-            ->when(
-                static function (Profile $profile) {
-                    $profile->visitProfile(ProfileId::fromString('3'));
-                    $profile->visitProfile(ProfileId::fromString('4'));
-                }
-            )
-            ->then(
-                new ProfileVisited(ProfileId::fromString('3')),
-                new ProfileVisited(ProfileId::fromString('4')),
-            );
-    }
-}
-```
-
-You can also test the creation of the aggregate:
-
-```php
-final class ProfileTest extends AggregateRootTestCase
-{
-    // protected function aggregateClass(): string;
-
-    public function testBehaviour(): void
-    {
-        $this
-            ->when(static fn () => Profile::createProfile(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')))
-            ->then(new ProfileCreated(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')));
-    }
-}
-```
-
-And expect an exception and the message of it:
-
-```php
-final class ProfileTest extends AggregateRootTestCase
-{
-    // protected function aggregateClass(): string;
-
-    public function testBehaviour(): void
-    {
-        $this
-            ->given(
-                new ProfileCreated(
-                    ProfileId::fromString('1'),
-                    Email::fromString('hq@patchlevel.de'),
-                ),
-            )
-            ->when(static fn (Profile $profile) => $profile->throwException())
-            ->expectsException(ProfileError::class)
-            ->expectsExceptionMessage('throwing so that you can catch it!');
-    }
-}
-```
-
-### Asserting aggregate state
-
-You can pass closures to `then()` to assert on the aggregate's state after the events have been applied. This is useful
-when your aggregate exposes state via public properties or getters that are set in `apply` methods. Closures receive the
-aggregate instance and are executed after the event assertion. You can mix closures and expected events freely — event
-order is preserved regardless of callback placement.
-
-```php
-final class ProfileTest extends AggregateRootTestCase
-{
-    // protected function aggregateClass(): string;
-
-    public function testBehaviour(): void
-    {
-        $this
-            ->given(
-                new ProfileCreated(
-                    ProfileId::fromString('1'),
-                    Email::fromString('hq@patchlevel.de'),
-                ),
-            )
-            ->when(static fn (Profile $profile) => $profile->visitProfile(ProfileId::fromString('2')))
-            ->then(
-                new ProfileVisited(ProfileId::fromString('2')),
-                static fn (Profile $profile) => self::assertSame('1', $profile->id()->toString()),
-            );
-    }
-}
-```
-
-> [!NOTE]
-> When `then()` receives only closures and no event objects, it strictly asserts that zero events were emitted.
-
-### Using Commandbus like syntax
-
-When using the command bus and the `#[Handle]` attributes in your aggregate you can also provide the command directly
-for the `when` method.
-
-```php
-final class ProfileTest extends AggregateRootTestCase
-{
-    // protected function aggregateClass(): string;
-
-    public function testBehaviour(): void
-    {
-        $this
-            ->when(new CreateProfile(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')))
-            ->then(new ProfileCreated(ProfileId::fromString('1'), Email::fromString('hq@patchlevel.de')));
-    }
-}
-```
-
-If more parameters than the command is needed, these can also be provided as additional parameters for `when`. In this
-example the we need a string which will be directly passed to the event.
-
-```php
-final class ProfileTest extends AggregateRootTestCase
-{
-    // protected function aggregateClass(): string;
-
-    public function testBehaviour(): void
-    {
-        $this
-            ->given(
-                new ProfileCreated(
-                    ProfileId::fromString('1'),
-                    Email::fromString('hq@patchlevel.de'),
-                ),
-            )
-            ->when(new VisitProfile(ProfileId::fromString('2')), 'Extra Parameter / Dependency')
-            ->then(new ProfileVisited(ProfileId::fromString('2'), 'Extra Parameter / Dependency'));
-    }
-}
-```
-
-## Testing Subscriber
-
-For testing a subscriber there is a utility class which you can use. Using `SubscriberUtilities` will provide you a
-bunch of dx features which makes the testing easier. First, you will need to provide the utility class the subscriptions
-you will want to test, this is done when initializing the class. After that, you can call these 3 methods:
-`executeSetup`, `executeRun` and `executeTeardown`. These methods will be calling the right methods which are defined
-via the attributes. For our example we are taking as simplified subscriber:
-
-```php
-use Patchlevel\EventSourcing\Attribute\Setup;
-use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Patchlevel\EventSourcing\Attribute\Subscriber;
-use Patchlevel\EventSourcing\Attribute\Teardown;
-
-#[Subscriber('profile_subscriber', RunMode::FromBeginning)]
-final class ProfileSubscriber
-{
-    public int $called = 0;
-
-    #[Subscribe(ProfileCreated::class)]
-    public function run(): void
-    {
-        $this->called++;
-    }
-
-    #[Setup]
-    public function setup(): void
-    {
-        $this->called++;
-    }
-
-    #[Teardown]
-    public function teardown(): void
-    {
-        $this->called++;
-    }
-}
-```
-
-With this, we can now write our test for it:
-
-```php
-use Patchlevel\EventSourcing\Attribute\Subscriber;
-use Patchlevel\EventSourcing\Subscription\RunMode;
-use Patchlevel\EventSourcing\PhpUnit\Test\SubscriberUtilities;
-
-final class ProfileSubscriberTest extends TestCase
-{
-    use SubscriberUtilities;
-
-    public function testProfileCreated(): void
-    {
-        $subscriber = new ProfileSubscriber(/* inject deps, if needed */);
-
-        $util = new SubscriberUtilities($subscriber);
-        $util->executeSetup();
-        $util->executeRun(
-            new ProfileCreated(
-                ProfileId::fromString('1'),
-                Email::fromString('hq@patchlevel.de'),
-            )
-        );
-       $util->executeTeardown();
-
-        self::assertSame(3, $subscriber->count);
-    }
-}
-```
-
-This Util class can be used for integration or unit tests.
-
-You can also pass `Message` instances with additional headers to the `executeRun` method. This allows testing
-subscribers that rely on additional parameters like header information:
-
-
-```php
-use Patchlevel\EventSourcing\Attribute\Subscribe;
-use Patchlevel\EventSourcing\Attribute\Subscriber;
-use DateTimeImmutable;
-
-#[Subscriber('profile_subscriber', RunMode::FromBeginning)]
-final class ProfileSubscriber
-{
-    #[Subscribe(ProfileCreated::class)]
-    public function run(ProfileCreated $event, DateTimeImmutable $recordedOn): void
-    {
-    }
-}
-```
-
-Add any headers you want in the test:
-
-```php
-use Patchlevel\EventSourcing\Attribute\Subscriber;
-use Patchlevel\EventSourcing\Message\Message;
-use Patchlevel\EventSourcing\Store\Header\RecordedOnHeader;
-use Patchlevel\EventSourcing\Subscription\RunMode;
-use Patchlevel\EventSourcing\PhpUnit\Test\SubscriberUtilities;
-use DateTimeImmutable;
-
-final class ProfileSubscriberTest extends TestCase
-{
-    use SubscriberUtilities;
-
-    public function testProfileCreated(): void
-    {
-        /* Setup and Teardown as before */
-
-        $util->executeRun(
-            Message::createWithHeaders(
-                new ProfileCreated(
-                    ProfileId::fromString('1'),
-                    Email::fromString('hq@patchlevel.de'),
-                ),
-                [new RecordedOnHeader(new DateTimeImmutable('now'))],
-            )
-        );
-
-       /* Your assertions */
-    }
-}
-```
+Also note that the `composer.lock` is always generated with the newest supported PHP version as this is the version our tools run in the CI.
