@@ -533,16 +533,16 @@
         },
         {
             "name": "patchlevel/event-sourcing",
-            "version": "3.22.0",
+            "version": "3.22.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/patchlevel/event-sourcing.git",
-                "reference": "dd29cd2b060447c86ee315a8edb5eb4c164d2301"
+                "reference": "809e5641b1d2caf575fbddc5d0a988055af0aaf1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/patchlevel/event-sourcing/zipball/dd29cd2b060447c86ee315a8edb5eb4c164d2301",
-                "reference": "dd29cd2b060447c86ee315a8edb5eb4c164d2301",
+                "url": "https://api.github.com/repos/patchlevel/event-sourcing/zipball/809e5641b1d2caf575fbddc5d0a988055af0aaf1",
+                "reference": "809e5641b1d2caf575fbddc5d0a988055af0aaf1",
                 "shasum": ""
             },
             "require": {
@@ -573,6 +573,7 @@
                 "phpstan/phpstan": "^2.1.11",
                 "phpstan/phpstan-phpunit": "^2.0",
                 "phpunit/phpunit": "^11.5.15",
+                "symfony/cache": "^6.4.0 || ^7.0.0 || ^8.0.0",
                 "symfony/messenger": "^5.4.31 || ^6.4.0 || ^7.0.1 || ^8.0.0",
                 "symfony/var-dumper": "^5.4.29 || ^6.4.0 || ^7.0.0 || ^8.0.0",
                 "wnx/commonmark-markdown-renderer": "^1.5.0"
@@ -620,22 +621,22 @@
             ],
             "support": {
                 "issues": "https://github.com/patchlevel/event-sourcing/issues",
-                "source": "https://github.com/patchlevel/event-sourcing/tree/3.22.0"
+                "source": "https://github.com/patchlevel/event-sourcing/tree/3.22.1"
             },
-            "time": "2026-10-02T16:35:54+00:00"
+            "time": "2026-10-07T10:28:14+00:00"
         },
         {
             "name": "patchlevel/hydrator",
-            "version": "1.24.2",
+            "version": "1.24.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/patchlevel/hydrator.git",
-                "reference": "5ac84524bf5432947a4f939b359ccaad13842318"
+                "reference": "b0c79d2b80ccf0ab95cc9b4494105af6b6bf00de"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/patchlevel/hydrator/zipball/5ac84524bf5432947a4f939b359ccaad13842318",
-                "reference": "5ac84524bf5432947a4f939b359ccaad13842318",
+                "url": "https://api.github.com/repos/patchlevel/hydrator/zipball/b0c79d2b80ccf0ab95cc9b4494105af6b6bf00de",
+                "reference": "b0c79d2b80ccf0ab95cc9b4494105af6b6bf00de",
                 "shasum": ""
             },
             "require": {
@@ -685,22 +686,22 @@
             ],
             "support": {
                 "issues": "https://github.com/patchlevel/hydrator/issues",
-                "source": "https://github.com/patchlevel/hydrator/tree/1.24.2"
+                "source": "https://github.com/patchlevel/hydrator/tree/1.24.3"
             },
-            "time": "2026-09-23T17:38:16+00:00"
+            "time": "2026-10-07T10:27:41+00:00"
         },
         {
             "name": "patchlevel/worker",
-            "version": "1.6.0",
+            "version": "1.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/patchlevel/worker.git",
-                "reference": "eae43edaeb4a96f275c7e8ed05dfa95fc1a3ee9c"
+                "reference": "100b0b2b960c8cd32a6e5a717777d56d81791425"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/patchlevel/worker/zipball/eae43edaeb4a96f275c7e8ed05dfa95fc1a3ee9c",
-                "reference": "eae43edaeb4a96f275c7e8ed05dfa95fc1a3ee9c",
+                "url": "https://api.github.com/repos/patchlevel/worker/zipball/100b0b2b960c8cd32a6e5a717777d56d81791425",
+                "reference": "100b0b2b960c8cd32a6e5a717777d56d81791425",
                 "shasum": ""
             },
             "require": {
@@ -751,9 +752,9 @@
             ],
             "support": {
                 "issues": "https://github.com/patchlevel/worker/issues",
-                "source": "https://github.com/patchlevel/worker/tree/1.6.0"
+                "source": "https://github.com/patchlevel/worker/tree/1.7.0"
             },
-            "time": "2026-10-02T17:54:07+00:00"
+            "time": "2026-10-05T07:23:26+00:00"
         },
         {
             "name": "phar-io/manifest",
@@ -3381,16 +3382,16 @@
         },
         {
             "name": "symfony/polyfill-deepclone",
-            "version": "v1.43.0",
+            "version": "v1.43.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-deepclone.git",
-                "reference": "8db92c5508a3f7f82d8688d32f0a4868a26e58ad"
+                "reference": "aaba44b6ee7299ae65717811c55b57ab9bc0fedd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-deepclone/zipball/8db92c5508a3f7f82d8688d32f0a4868a26e58ad",
-                "reference": "8db92c5508a3f7f82d8688d32f0a4868a26e58ad",
+                "url": "https://api.github.com/repos/symfony/polyfill-deepclone/zipball/aaba44b6ee7299ae65717811c55b57ab9bc0fedd",
+                "reference": "aaba44b6ee7299ae65717811c55b57ab9bc0fedd",
                 "shasum": ""
             },
             "require": {
@@ -3444,7 +3445,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-deepclone/tree/v1.43.0"
+                "source": "https://github.com/symfony/polyfill-deepclone/tree/v1.43.1"
             },
             "funding": [
                 {
@@ -3464,7 +3465,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-09-30T09:07:27+00:00"
+            "time": "2026-10-06T19:46:18+00:00"
         },
         {
             "name": "symfony/polyfill-intl-grapheme",
@@ -5758,11 +5759,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.2.17",
+            "version": "2.3.1",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/e676a49fa70cee9f5bf6ff4796186b928a08673f",
-                "reference": "e676a49fa70cee9f5bf6ff4796186b928a08673f",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/6155239b488e95d26d1ebd95c6b4bb294d7f09db",
+                "reference": "6155239b488e95d26d1ebd95c6b4bb294d7f09db",
                 "shasum": ""
             },
             "require": {
@@ -5818,7 +5819,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-10-04T19:40:09+00:00"
+            "time": "2026-10-08T21:09:11+00:00"
         },
         {
             "name": "sanmai/di-container",
@@ -6602,16 +6603,16 @@
         },
         {
             "name": "webmozart/assert",
-            "version": "2.4.1",
+            "version": "2.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webmozarts/assert.git",
-                "reference": "2ccb7c2e821038c03a3e6e1700c570c158c55f70"
+                "reference": "8a163706bbcac613733dba03f51e13b5eb1bb819"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webmozarts/assert/zipball/2ccb7c2e821038c03a3e6e1700c570c158c55f70",
-                "reference": "2ccb7c2e821038c03a3e6e1700c570c158c55f70",
+                "url": "https://api.github.com/repos/webmozarts/assert/zipball/8a163706bbcac613733dba03f51e13b5eb1bb819",
+                "reference": "8a163706bbcac613733dba03f51e13b5eb1bb819",
                 "shasum": ""
             },
             "require": {
@@ -6662,9 +6663,9 @@
             ],
             "support": {
                 "issues": "https://github.com/webmozarts/assert/issues",
-                "source": "https://github.com/webmozarts/assert/tree/2.4.1"
+                "source": "https://github.com/webmozarts/assert/tree/2.5.0"
             },
-            "time": "2026-06-15T15:31:57+00:00"
+            "time": "2026-10-05T23:14:19+00:00"
         },
         {
             "name": "wnx/commonmark-markdown-renderer",
