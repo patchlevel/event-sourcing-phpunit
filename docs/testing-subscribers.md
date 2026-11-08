@@ -167,7 +167,130 @@ $util = new SubscriberUtilities(
 Metadata factories and argument resolvers are defined by the [event-sourcing](https://patchlevel.dev/docs/event-sourcing/latest) library. You only need them when your subscribers go beyond the default event and header arguments.
 :::
 
+## Emitting events
+
+A subscribe method can ask for an `EventEmitter` to write new events. Like the subscription engine, the utility needs an `EventEmitterResolver` for that. Give it an `InMemoryStore` and assert what ended up in there.
+
+```php
+use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Patchlevel\EventSourcing\Attribute\Subscriber;
+use Patchlevel\EventSourcing\Metadata\Subscriber\AttributeSubscriberMetadataFactory;
+use Patchlevel\EventSourcing\PhpUnit\Test\SubscriberUtilities;
+use Patchlevel\EventSourcing\Store\InMemoryStore;
+use Patchlevel\EventSourcing\Subscription\RunMode;
+use Patchlevel\EventSourcing\Subscription\Subscriber\ArgumentResolver\EventEmitterResolver;
+use Patchlevel\EventSourcing\Subscription\Subscriber\EventEmitter\EventEmitter;
+use PHPUnit\Framework\TestCase;
+
+#[Subscriber('profile_welcome', RunMode::FromBeginning)]
+final class ProfileWelcome
+{
+    #[Subscribe(ProfileCreated::class)]
+    public function onProfileCreated(ProfileCreated $event, EventEmitter $eventEmitter): void
+    {
+        $eventEmitter->emit([new ProfileVisited($event->profileId)]);
+    }
+}
+
+final class ProfileWelcomeTest extends TestCase
+{
+    public function testEmitsVisit(): void
+    {
+        $store = new InMemoryStore();
+
+        $util = new SubscriberUtilities(
+            new ProfileWelcome(),
+            new AttributeSubscriberMetadataFactory(),
+            [new EventEmitterResolver($store)],
+        );
+        $util->executeRun(
+            new ProfileCreated(
+                ProfileId::fromString('1'),
+                Email::fromString('hq@patchlevel.de'),
+            ),
+        );
+
+        self::assertEquals(
+            new ProfileVisited(ProfileId::fromString('1')),
+            $store->load()->current()?->event(),
+        );
+    }
+}
+```
+## Batching and partitions
+
+A subscriber with batch attributes works like in the subscription engine. Each `executeRun()` begins a batch on the first message, passes the state to the parameters marked with `#[BatchState]`, flushes it when `afterMessages` or `#[BatchShouldFlush]` say so and flushes the rest at the end. If a subscribe method throws, the batch is rolled back and the exception is passed on to your test.
+
+```php
+use Patchlevel\EventSourcing\Attribute\BatchBegin;
+use Patchlevel\EventSourcing\Attribute\BatchFlush;
+use Patchlevel\EventSourcing\Attribute\BatchState;
+use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Patchlevel\EventSourcing\Attribute\Subscriber;
+use Patchlevel\EventSourcing\PhpUnit\Test\SubscriberUtilities;
+use Patchlevel\EventSourcing\Subscription\RunMode;
+use PHPUnit\Framework\TestCase;
+
+final class ProfileCountBatch
+{
+    public int $count = 0;
+}
+
+#[Subscriber('profile_batch_counter', RunMode::FromBeginning)]
+final class ProfileBatchCounter
+{
+    public int $flushed = 0;
+
+    #[BatchBegin]
+    public function begin(): ProfileCountBatch
+    {
+        return new ProfileCountBatch();
+    }
+
+    #[Subscribe(ProfileCreated::class)]
+    public function onProfileCreated(
+        ProfileCreated $event,
+        #[BatchState]
+        ProfileCountBatch $batch,
+    ): void {
+        $batch->count++;
+    }
+
+    #[BatchFlush]
+    public function flush(ProfileCountBatch $batch): void
+    {
+        $this->flushed += $batch->count;
+    }
+}
+
+final class ProfileBatchCounterTest extends TestCase
+{
+    public function testFlushesAtTheEnd(): void
+    {
+        $subscriber = new ProfileBatchCounter();
+
+        $util = new SubscriberUtilities($subscriber);
+        $util->executeRun(
+            new ProfileCreated(
+                ProfileId::fromString('1'),
+                Email::fromString('hq@patchlevel.de'),
+            ),
+            new ProfileCreated(
+                ProfileId::fromString('2'),
+                Email::fromString('info@patchlevel.de'),
+            ),
+        );
+
+        self::assertSame(2, $subscriber->flushed);
+    }
+}
+```
+:::note
+Subscribers with a `#[Partition]` attribute get their partition key from the partitioner, and every partition has its own batch. Your messages need the headers the partitioner reads, for example a `StreamNameHeader` for the `StreamPartitioner`.
+:::
+
 ## Learn more
 
 * [How to test aggregates](testing-aggregates.md)
+* [How to test decisions](testing-decisions.md)
 * [How to get started](getting-started.md)
