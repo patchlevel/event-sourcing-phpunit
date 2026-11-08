@@ -2,7 +2,7 @@
   "name": "patchlevel/event-sourcing-phpunit",
   "type": "library",
   "license": "MIT",
-  "description": "Test your event-sourcing aggregates and subscribers with a clear given / when / then notation",
+  "description": "Test your event-sourcing aggregates, decisions and subscribers with a clear given / when / then notation",
   "keywords": [
     "patchlevel",
     "event-sourcing",
@@ -22,8 +22,8 @@
     }
   ],
   "require": {
-    "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-    "patchlevel/event-sourcing": "^3.13.0",
+    "php": "~8.4.0 || ~8.5.0",
+    "patchlevel/event-sourcing": "4.0.x-dev",
     "phpunit/phpunit": "^10.5.45 || ^11.0.0 || ^12.0.0 || ^13.0.0"
   },
   "require-dev": {
@@ -43,6 +43,7 @@
       "composer/package-versions-deprecated": true
     }
   },
+  "prefer-stable": true,
   "autoload": {
     "psr-4": {
       "Patchlevel\\EventSourcing\\PhpUnit\\": "src/"

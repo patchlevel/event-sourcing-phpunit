@@ -9,19 +9,17 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\CommandBus\HandlerFinder;
 use PHPUnit\Framework\Attributes\After;
 use PHPUnit\Framework\Attributes\Before;
-use PHPUnit\Framework\Constraint\Exception as ExceptionConstraint;
-use PHPUnit\Framework\Constraint\ExceptionMessageIsOrContains;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
-use ReflectionFunction;
 use Throwable;
 
 use function array_filter;
 use function array_values;
-use function sprintf;
 
 abstract class AggregateRootTestCase extends TestCase
 {
+    use Expectations;
+
     /** @var array<object> */
     private array $givenEvents = [];
     private object|null $when = null;
@@ -34,9 +32,6 @@ abstract class AggregateRootTestCase extends TestCase
     private array $thenExpectations = [];
 
     private Throwable|null $thrownException = null;
-    /** @var class-string<Throwable>|null */
-    private string|null $expectedException = null;
-    private string|null $expectedExceptionMessage = null;
 
     /** @return class-string<AggregateRoot> */
     abstract protected function aggregateClass(): string;
@@ -106,21 +101,6 @@ abstract class AggregateRootTestCase extends TestCase
         return $this;
     }
 
-    /** @param class-string<Throwable> $exception */
-    final public function expectsException(string $exception): self
-    {
-        $this->expectedException = $exception;
-
-        return $this;
-    }
-
-    final public function expectsExceptionMessage(string $exceptionMessage): self
-    {
-        $this->expectedExceptionMessage = $exceptionMessage;
-
-        return $this;
-    }
-
     #[After]
     final public function assert(): self
     {
@@ -148,20 +128,7 @@ abstract class AggregateRootTestCase extends TestCase
         self::assertEquals($expectedEvents, $events, 'The events doesn\'t match the expected events.');
 
         foreach ($expectationCallbacks as $callback) {
-            try {
-                $callback($this->aggregate);
-            } catch (Throwable $t) {
-                $reflection = new ReflectionFunction($callback);
-
-                self::fail(
-                    sprintf(
-                        'then() callback defined in %s on line %d failed: %s',
-                        $reflection->getFileName(),
-                        $reflection->getStartLine(),
-                        $t->getMessage(),
-                    ),
-                );
-            }
+            $this->runThenCallback($callback, $this->aggregate);
         }
 
         return $this;
@@ -178,44 +145,5 @@ abstract class AggregateRootTestCase extends TestCase
         $this->expectedExceptionMessage = null;
         $this->aggregate = null;
         $this->thrownException = null;
-    }
-
-    private function handleException(Throwable $throwable): void
-    {
-        $checked = false;
-
-        if ($this->expectedException) {
-            self::assertThat($throwable, new ExceptionConstraint($this->expectedException));
-            $checked = true;
-        }
-
-        if ($this->expectedExceptionMessage) {
-            self::assertThat($throwable->getMessage(), new ExceptionMessageIsOrContains($this->expectedExceptionMessage));
-            $checked = true;
-        }
-
-        if (!$checked) {
-            throw $throwable;
-        }
-    }
-
-    private function expectedExceptionWasNotThrown(): void
-    {
-        if ($this->expectedException !== null) {
-            self::assertThat(null, new ExceptionConstraint($this->expectedException));
-        }
-
-        if ($this->expectedExceptionMessage === null) {
-            return;
-        }
-
-        self::assertThat(
-            null,
-            new ExceptionMessageIsOrContains($this->expectedExceptionMessage),
-            sprintf(
-                'Failed asserting that exception with message "%s" is thrown',
-                $this->expectedExceptionMessage,
-            ),
-        );
     }
 }

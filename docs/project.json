@@ -3,6 +3,9 @@
     { "title": "Introduction", "file": "introduction.md" },
     { "title": "Getting Started", "file": "getting-started.md" },
     { "title": "Testing Aggregates", "file": "testing-aggregates.md" },
-    { "title": "Testing Subscribers", "file": "testing-subscribers.md" }
+    { "title": "Testing Decisions", "file": "testing-decisions.md" },
+    { "title": "Testing Projections", "file": "testing-projections.md" },
+    { "title": "Testing Subscribers", "file": "testing-subscribers.md" },
+    { "title": "Upgrade from 1.x", "file": "UPGRADE-2.0.md" }
   ]
 }

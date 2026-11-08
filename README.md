@@ -4,13 +4,15 @@
 
 # Event Sourcing PHPUnit
 
-"Test your event-sourcing aggregates and subscribers with a clear given / when / then notation."
+"Test your event-sourcing aggregates, decisions and subscribers with a clear given / when / then notation."
 
 ## Features
 
 * A [given / when / then test case](https://patchlevel.dev/docs/event-sourcing-phpunit/latest/testing-aggregates) for aggregate behaviour
 * A `when` that also [dispatches commands](https://patchlevel.dev/docs/event-sourcing-phpunit/latest/testing-aggregates) through your `#[Handle]` methods
 * [Aggregate state assertions](https://patchlevel.dev/docs/event-sourcing-phpunit/latest/testing-aggregates) with closures
+* A [given / when / then test case for decisions](https://patchlevel.dev/docs/event-sourcing-phpunit/latest/testing-decisions) of the dynamic consistency boundary, including concurrent appends
+* A [test case for projections](https://patchlevel.dev/docs/event-sourcing-phpunit/latest/testing-projections) that respects your tag filters
 * A [subscriber utility](https://patchlevel.dev/docs/event-sourcing-phpunit/latest/testing-subscribers) for setup, run and teardown
 * and much more...
 

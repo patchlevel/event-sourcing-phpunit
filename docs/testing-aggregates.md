@@ -252,5 +252,6 @@ The test case guards against incomplete tests with dedicated errors, all extendi
 
 ## Learn more
 
+* [How to test decisions](testing-decisions.md)
 * [How to test subscribers](testing-subscribers.md)
 * [How to get started](getting-started.md)

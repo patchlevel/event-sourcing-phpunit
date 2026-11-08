@@ -172,4 +172,5 @@ You now have a fast unit test suite for your aggregates and subscribers, written
 ## Learn more
 
 * [How to test aggregates](testing-aggregates.md)
+* [How to test decisions](testing-decisions.md)
 * [How to test subscribers](testing-subscribers.md)
