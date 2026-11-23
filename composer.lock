@@ -318,16 +318,16 @@
         },
         {
             "name": "doctrine/migrations",
-            "version": "3.9.8",
+            "version": "3.9.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/migrations.git",
-                "reference": "eb0b9ce3f999d720fa73037bbd06977ea34b76a0"
+                "reference": "5749e371aa864ce6578a8fa9167e5aa6e676ba6f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/migrations/zipball/eb0b9ce3f999d720fa73037bbd06977ea34b76a0",
-                "reference": "eb0b9ce3f999d720fa73037bbd06977ea34b76a0",
+                "url": "https://api.github.com/repos/doctrine/migrations/zipball/5749e371aa864ce6578a8fa9167e5aa6e676ba6f",
+                "reference": "5749e371aa864ce6578a8fa9167e5aa6e676ba6f",
                 "shasum": ""
             },
             "require": {
@@ -401,7 +401,7 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/migrations/issues",
-                "source": "https://github.com/doctrine/migrations/tree/3.9.8"
+                "source": "https://github.com/doctrine/migrations/tree/3.9.9"
             },
             "funding": [
                 {
@@ -417,8 +417,8 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-10-04T12:35:58+00:00",
-            "published-time": "2026-10-04T13:06:24+00:00"
+            "time": "2026-11-22T11:20:36+00:00",
+            "published-time": "2026-11-22T11:21:15+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -5785,11 +5785,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.3.6",
+            "version": "2.3.7",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/00cedebb76cc82c1592414fa4f616cefdccda16f",
-                "reference": "00cedebb76cc82c1592414fa4f616cefdccda16f",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/90c91c2498849ab8cc4e873864bbf1cb2bf6ea12",
+                "reference": "90c91c2498849ab8cc4e873864bbf1cb2bf6ea12",
                 "shasum": ""
             },
             "require": {
@@ -5845,8 +5845,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-11-15T19:58:26+00:00",
-            "published-time": "2026-11-15T19:58:39+00:00"
+            "time": "2026-11-19T10:31:11+00:00",
+            "published-time": "2026-11-19T10:31:27+00:00"
         },
         {
             "name": "sanmai/di-container",
@@ -5930,16 +5930,16 @@
         },
         {
             "name": "sanmai/duoclock",
-            "version": "0.1.4",
+            "version": "0.1.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sanmai/DuoClock.git",
-                "reference": "9fa79ec9445c8a43e3e6f5deefdebe920085f284"
+                "reference": "ee0171d29902e5fa29e6d0b8b297667622afcdbc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sanmai/DuoClock/zipball/9fa79ec9445c8a43e3e6f5deefdebe920085f284",
-                "reference": "9fa79ec9445c8a43e3e6f5deefdebe920085f284",
+                "url": "https://api.github.com/repos/sanmai/DuoClock/zipball/ee0171d29902e5fa29e6d0b8b297667622afcdbc",
+                "reference": "ee0171d29902e5fa29e6d0b8b297667622afcdbc",
                 "shasum": ""
             },
             "require": {
@@ -5981,7 +5981,7 @@
             "description": "PHP time mocking for tests - PSR-20 clock with mockable sleep(), time(), and TimeSpy for PHPUnit testing",
             "support": {
                 "issues": "https://github.com/sanmai/DuoClock/issues",
-                "source": "https://github.com/sanmai/DuoClock/tree/0.1.4"
+                "source": "https://github.com/sanmai/DuoClock/tree/0.1.5"
             },
             "funding": [
                 {
@@ -5989,8 +5989,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-11-06T08:04:12+00:00",
-            "published-time": "2026-11-06T08:04:52+00:00"
+            "time": "2026-11-17T23:41:42+00:00",
+            "published-time": "2026-11-17T23:42:09+00:00"
         },
         {
             "name": "sanmai/later",
